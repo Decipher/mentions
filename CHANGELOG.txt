@@ -3,5 +3,6 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+- Added database schema and CRUD functions.
 - Initial 6.x release.
 

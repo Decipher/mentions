@@ -1,0 +1,36 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Database schema for Mentions.
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function mentions_schema() {
+  $schema['mentions'] = array(
+    'fields' => array(
+      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'cid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE),
+      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_install().
+ */
+function mentions_install() {
+  drupal_install_schema('mentions');
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function mentions_uninstall() {
+  drupal_uninstall_schema('mentions');
+}

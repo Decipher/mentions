@@ -20,7 +20,6 @@ Features
 Usage/Configuration
 -------------------
 
-Once installed, @username needs to be enabled on your desired content types,
-this can be done via the 'Input formats' configuration page.
+Once installed, the Mentions filter needs to be enabled on your desired content types,
+this can be done via the Input formats configuration page.
 http://[www.yoursite.com/path/to/drupal]/admin/settings/filters
-
