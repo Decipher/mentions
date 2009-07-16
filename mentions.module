@@ -1,0 +1,118 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Contains core functions for Mentions module.
+ */
+
+/**
+ * Implementation of hook_theme().
+ */
+function mentions_theme($existing, $type, $theme, $path) {
+  return array(
+    'mentions' => array(
+      'arguments' => array('user' => array()),
+    ),
+  );
+}
+
+/**
+ * Implementation of hook_filter_tips().
+ */
+function mentions_filter_tips($delta, $format, $long = FALSE) {
+  return t("[@username] or [@#uid] creates a link the user's profile page.");;
+}
+
+/**
+ * Implementation of hook_filter().
+ */
+function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
+  switch ($op) {
+    case 'list':
+      return array(0 => t("Mentions filter"));
+
+    case 'description':
+      return t("Converts [@username] and [@#uid] into a link the user's profile page.");
+
+    case 'process':
+      foreach (mentions_find_users($text) as $match) {
+        $text = str_replace($match['text'], theme('mentions', $match['user']), $text);
+      }
+
+      return $text;
+
+    default:
+      return $text;
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi().
+ */
+function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  switch ($op) {
+    case 'presave':
+      foreach (mentions_find_users($node->body) as $match) {
+        // @TODO: Store matches in database.
+      }
+      break;
+  }
+}
+
+/**
+ * Implementation of hook_comment().
+ */
+function mentions_comment(&$a1, $op) {
+  switch ($op) {
+    case 'publish':
+      foreach (mentions_find_users($a1['comment']) as $match) {
+        // @TODO: Store matches in database.
+      }
+      break;
+  }
+}
+
+/**
+ * Analyze text for [@username] and [@#uid] references.
+ *
+ * @param $text
+ *   Text string for analysis.
+ * @return
+ *   An array of matched text and user accounts.
+ */
+function mentions_find_users($text) {
+  $users = array();
+
+  if (preg_match_all('/\B\[@(\#?.*?)\]/', $text, $matches, PREG_SET_ORDER)) {
+    foreach ($matches as $match) {
+      $user = (drupal_substr($match[1], 0, 1) == '#')
+        ? user_load(drupal_substr($match[1], 1))
+        : user_load(array('name' => $match[1]));
+
+      if (is_object($user)) {
+        $users[] = array(
+          'text' => $match[0],
+          'user' => $user
+        );
+      }
+    }
+  }
+
+  return $users;
+}
+
+/**
+ * Return a '@username' link to user's profile.
+ *
+ * @param $user
+ *   A Drupal user account.
+ */
+function theme_mentions($user) {
+  $attributes = array(
+    'class' => 'mentions mentions-'. $user->uid,
+    'title' => $user->name,
+  );
+
+  return l('@'. $user->name, 'user/'. $user->uid, array('attributes' => $attributes));
+}

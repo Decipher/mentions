@@ -1,0 +1,4 @@
+; $Id$
+name = Mentions
+description = Adds Twitter like @username linking and tracking features.
+core = 6.x
