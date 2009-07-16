@@ -1,12 +1,12 @@
 // $Id$
 
-The @username module adds a filter to convert [@username] or [@#uid] patterns to
+The Mentions module adds a filter to convert [@username] or [@#uid] patterns to
 a link to the user's profile page, in a similar way @username is used on Twitter.
 
-A future version of this module will provide a 'mentions' feature, allowing
+The module will also track all @username mentions as of the stable release, allowing
 users to view all content that references their @username.
 
-@username was written and is maintained by Stuart Clark (deciphered).
+Mentions was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
 
 

@@ -1,11 +1,7 @@
 // $Id$
 
-@username 6.x-1.x-dev, xxxx-xx-xx (development release)
------------------------------
-
-
-@username 6.x-1.0, xxxx-xx-xx
------------------------------
+Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
+----------------------------
 
 - Initial 6.x release.
 
