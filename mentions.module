@@ -52,36 +52,13 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
  */
 function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
-    case 'presave':
-      // @TODO: Optimize code, two almost identical function should be merged.
-      $old_users = array();
-      $result = db_query(
-        "SELECT uid FROM {mentions} WHERE nid = %d AND cid IS NULL", $node->nid
-      );
-      while ($data = db_fetch_object($result)) {
-        $old_users[] = $data->uid;
-      }
+    case 'insert':
+    case 'update':
+      _mentions_update(mentions_find_users($node->body), $node->nid);
+      break;
 
-      $new_users = array();
-      foreach (mentions_find_users($node->body) as $match) {
-        if (!in_array($match['user']->uid, $new_users)) {
-          $new_users[] = $match['user']->uid;
-        }
-      }
-
-      // Add new mentions.
-      foreach (array_diff($new_users, $old_users) as $user) {
-        db_query(
-          "INSERT INTO {mentions} (nid, uid) VALUES (%d, %d)", $node->nid, $user
-        );
-      }
-
-      // Remove old mentions.
-      foreach (array_diff($old_users, $new_users) as $user) {
-        db_query(
-          "DELETE FROM {mentions} WHERE nid = %d AND cid IS NULL AND uid = %d", $node->nid, $user
-        );
-      }
+    case 'delete':
+      _mentions_delete($node->nid);
       break;
   }
 }
@@ -92,37 +69,57 @@ function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 function mentions_comment(&$a1, $op) {
   switch ($op) {
     case 'publish':
-      // @TODO: Optimize code, two almost identical function should be merged.
-      $old_users = array();
-      $result = db_query(
-        "SELECT uid FROM {mentions} WHERE nid = %d AND cid = %d", $a1['nid'], $a1['cid']
-      );
-      while ($data = db_fetch_object($result)) {
-        $old_users[] = $data->uid;
-      }
+      _mentions_update(mentions_find_users($a1['comment']), $a1['nid'], $a1['cid']);
+      break;
 
-      $new_users = array();
-      foreach (mentions_find_users($a1['comment']) as $match) {
-        if (!in_array($match['user']->uid, $new_users)) {
-          $new_users[] = $match['user']->uid;
-        }
-      }
-
-      // Add new mentions.
-      foreach (array_diff($new_users, $old_users) as $user) {
-        db_query(
-          "INSERT INTO {mentions} (nid, cid, uid) VALUES (%d, %d, %d)", $a1['nid'], $a1['cid'], $user
-        );
-      }
-
-      // Remove old mentions.
-      foreach (array_diff($old_users, $new_users) as $user) {
-        db_query(
-          "DELETE FROM {mentions} WHERE nid = %d AND cid = %d AND uid = %d", $a1['nid'], $a1['cid'], $user
-        );
-      }
+    case 'delete':
+      _mentions_delete($a1->nid, $a1->cid);
       break;
   }
+}
+
+/**
+ * Insert and Remove mentions on update.
+ */
+function _mentions_update($mentions, $nid, $cid = NULL) {
+  // Build array of old mentions.
+  $old_users = array();
+  $result = db_query(
+    "SELECT uid FROM {mentions} WHERE nid = %d AND cid ". (is_null($cid) ? "IS NULL" : "= %d"), $nid, $cid
+  );
+  while ($data = db_fetch_object($result)) {
+    $old_users[] = $data->uid;
+  }
+
+  // Build array of new mentions.
+  $new_users = array();
+  foreach ($mentions as $mention) {
+    if (!in_array($mention['user']->uid, $new_users)) {
+      $new_users[] = $mention['user']->uid;
+    }
+  }
+
+  // Add new user mentions.
+  foreach (array_diff($new_users, $old_users) as $user) {
+    db_query(
+      "INSERT INTO {mentions} (uid, nid, timestamp". (!is_null($cid) ? ", cid" : "") .")
+      VALUES (%d, %d, %d". (!is_null($cid) ? ", %d" : "") .")", $user, $nid, time(), $cid
+    );
+  }
+
+  // Remove old mentions.
+  foreach (array_diff($old_users, $new_users) as $user) {
+    db_query(
+      "DELETE FROM {mentions} WHERE uid = %d AND nid = %d". (!is_null($cid) ? " AND cid = %d" : ""), $user, $nid, $cid
+    );
+  }
+}
+
+/**
+ * Remove mentions on delete.
+ */
+function _mentions_delete($nid, $cid = NULL) {
+  db_query("DELETE FROM {mentions} WHERE nid = %d". (!is_null($cid) ? " AND cid = %d" : ""), $nid, $cid);
 }
 
 /**
