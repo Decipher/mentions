@@ -1,9 +1,8 @@
 <?php
 // $Id$
-
 /**
  * @file
- * Database schema for Mentions.
+ * Contains database schema for the Mentions module.
  */
 
 /**
@@ -13,6 +12,7 @@ function mentions_schema() {
   $schema['mentions'] = array(
     'fields' => array(
       'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'auid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'cid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE),
       'timestamp' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),

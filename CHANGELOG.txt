@@ -3,6 +3,8 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+- Added default view for tracking mentions.
+- Added views integration.
 - Added improved handling of deleted mentions.
 - Added database schema and CRUD functions.
 - Initial 6.x release.

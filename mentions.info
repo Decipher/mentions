@@ -1,4 +1,5 @@
 ; $Id$
 name = Mentions
 description = Adds Twitter like @username linking and tracking features.
+dependencies[] = views
 core = 6.x

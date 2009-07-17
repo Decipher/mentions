@@ -1,9 +1,8 @@
 <?php
 // $Id$
-
 /**
  * @file
- * Contains core functions for Mentions module.
+ * Contains core functions for the Mentions module.
  */
 
 /**
@@ -54,7 +53,7 @@ function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   switch ($op) {
     case 'insert':
     case 'update':
-      _mentions_update(mentions_find_users($node->body), $node->nid);
+      _mentions_update(mentions_find_users($node->body), $node->uid, $node->nid);
       break;
 
     case 'delete':
@@ -69,7 +68,7 @@ function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 function mentions_comment(&$a1, $op) {
   switch ($op) {
     case 'publish':
-      _mentions_update(mentions_find_users($a1['comment']), $a1['nid'], $a1['cid']);
+      _mentions_update(mentions_find_users($a1['comment']), $a1['uid'], $a1['nid'], $a1['cid']);
       break;
 
     case 'delete':
@@ -81,7 +80,7 @@ function mentions_comment(&$a1, $op) {
 /**
  * Insert and Remove mentions on update.
  */
-function _mentions_update($mentions, $nid, $cid = NULL) {
+function _mentions_update($mentions, $auid, $nid, $cid = NULL) {
   // Build array of old mentions.
   $old_users = array();
   $result = db_query(
@@ -102,8 +101,8 @@ function _mentions_update($mentions, $nid, $cid = NULL) {
   // Add new user mentions.
   foreach (array_diff($new_users, $old_users) as $user) {
     db_query(
-      "INSERT INTO {mentions} (uid, nid, timestamp". (!is_null($cid) ? ", cid" : "") .")
-      VALUES (%d, %d, %d". (!is_null($cid) ? ", %d" : "") .")", $user, $nid, time(), $cid
+      "INSERT INTO {mentions} (uid, auid, nid, timestamp". (!is_null($cid) ? ", cid" : "") .")
+      VALUES (%d, %d, %d, %d". (!is_null($cid) ? ", %d" : "") .")", $user, $auid, $nid, time(), $cid
     );
   }
 
@@ -149,6 +148,18 @@ function mentions_find_users($text) {
   }
 
   return $users;
+}
+
+
+/**
+ * Implementation of hook_views_api.
+ * Notifies the Views module that we're compatible with a particular API revision.
+ */
+function mentions_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'mentions') .'/includes',
+  );
 }
 
 /**

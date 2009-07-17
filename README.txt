@@ -1,10 +1,8 @@
 // $Id$
 
-The Mentions module adds a filter to convert [@username] or [@#uid] patterns to
-a link to the user's profile page, in a similar way @username is used on Twitter.
-
-The module will also track all @username mentions as of the stable release, allowing
-users to view all content that references their @username.
+The Mentions module offers Twitter like functionality, recording all references
+to a user's username - using the [@username] or [@#uid] filter format - in all
+Nodes and Comments, providing a centralized page to track all mentions.
 
 Mentions was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
@@ -13,13 +11,14 @@ Mentions was written and is maintained by Stuart Clark (deciphered).
 Features
 -------------------
 
-* Coverts [@username] to a link to the user's profile.
-* Coverts [@#uid] to a link to the user's profile.
+* An Input filter to convert [@username] or [@#uid] to the user's profile.
+* Views integration, including a default page view for tracking mentions.
+  * http://[www.yoursite.com/path/to/drupal]/user/[#uid]/mentions
 
 
 Usage/Configuration
 -------------------
 
-Once installed, the Mentions filter needs to be enabled on your desired content types,
-this can be done via the Input formats configuration page.
-http://[www.yoursite.com/path/to/drupal]/admin/settings/filters
+Once installed, the Mentions filter needs to be enabled on your desired content
+types, this can be done via the Input formats configuration page.
+* http://[www.yoursite.com/path/to/drupal]/admin/settings/filters
