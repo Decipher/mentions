@@ -37,4 +37,10 @@ function mentions_install() {
  */
 function mentions_uninstall() {
   drupal_uninstall_schema('mentions');
+
+  variable_del('mentions_input_prefix');
+  variable_del('mentions_input_suffix');
+  variable_del('mentions_output_prefix');
+  variable_del('mentions_output_content');
+  variable_del('mentions_output_prefix');
 }

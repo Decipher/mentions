@@ -3,6 +3,8 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+- Added support for Token module.
+- Added customizable input and output patterns.
 - Added default view for tracking mentions.
 - Added views integration.
 - Added improved handling of deleted mentions.
