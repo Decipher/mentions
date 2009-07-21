@@ -14,7 +14,7 @@ function mentions_views_default_views() {
    */
   $view = new view;
   $view->name = 'mentions';
-  $view->description = '';
+  $view->description = 'Displays @username style Mentions made in all Nodes and Comments.';
   $view->tag = '';
   $view->view_php = '';
   $view->base_table = 'mentions';
@@ -24,10 +24,10 @@ function mentions_views_default_views() {
   $handler = $view->new_display('default', 'Defaults', 'default');
   $handler->override_option('fields', array(
     'title' => array(
-      'label' => 'Title',
+      'label' => '',
       'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
+        'alter_text' => 1,
+        'text' => '<strong>[title]</strong>',
         'make_link' => 0,
         'path' => '',
         'link_class' => '',
@@ -42,7 +42,7 @@ function mentions_views_default_views() {
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'link_to_mention' => 1,
+      'link_to_mention' => 0,
       'exclude' => 0,
       'text' => '',
       'id' => 'title',
@@ -50,11 +50,38 @@ function mentions_views_default_views() {
       'field' => 'title',
       'relationship' => 'none',
     ),
-    'auid' => array(
-      'label' => 'Author',
+    'timestamp' => array(
+      'label' => '',
       'alter' => array(
-        'alter_text' => 0,
-        'text' => '',
+        'alter_text' => 1,
+        'text' => '[timestamp] ago',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 0,
+        'max_length' => '',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'date_format' => 'raw time ago',
+      'custom_date_format' => '',
+      'exclude' => 0,
+      'id' => 'timestamp',
+      'table' => 'mentions',
+      'field' => 'timestamp',
+      'relationship' => 'none',
+    ),
+    'auid' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 1,
+        'text' => 'by [auid]',
         'make_link' => 0,
         'path' => '',
         'link_class' => '',
@@ -78,8 +105,33 @@ function mentions_views_default_views() {
       'field' => 'auid',
       'relationship' => 'none',
     ),
-    'timestamp' => array(
-      'label' => 'Date',
+    'content' => array(
+      'label' => '',
+      'alter' => array(
+        'alter_text' => 0,
+        'text' => '',
+        'make_link' => 0,
+        'path' => '',
+        'link_class' => '',
+        'alt' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'help' => '',
+        'trim' => 1,
+        'max_length' => '140',
+        'word_boundary' => 1,
+        'ellipsis' => 1,
+        'strip_tags' => 0,
+        'html' => 0,
+      ),
+      'exclude' => 0,
+      'id' => 'content',
+      'table' => 'mentions',
+      'field' => 'content',
+      'relationship' => 'none',
+    ),
+    'link' => array(
+      'label' => '',
       'alter' => array(
         'alter_text' => 0,
         'text' => '',
@@ -97,12 +149,11 @@ function mentions_views_default_views() {
         'strip_tags' => 0,
         'html' => 0,
       ),
-      'date_format' => 'small',
-      'custom_date_format' => '',
+      'text' => 'View mention',
       'exclude' => 0,
-      'id' => 'timestamp',
+      'id' => 'link',
       'table' => 'mentions',
-      'field' => 'timestamp',
+      'field' => 'link',
       'relationship' => 'none',
     ),
   ));
@@ -165,6 +216,7 @@ function mentions_views_default_views() {
   $handler->override_option('cache', array(
     'type' => 'none',
   ));
+  $handler->override_option('use_pager', '1');
   $handler->override_option('style_plugin', 'list');
   $handler->override_option('style_options', array(
     'grouping' => '',

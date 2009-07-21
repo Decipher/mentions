@@ -3,10 +3,12 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+- #521862: Added customizable input and output patterns.
+- Added SimpleTest.
+- Added Content and Link fields to Views integration.
 - Added support for Token module.
-- Added customizable input and output patterns.
-- Added default view for tracking mentions.
-- Added views integration.
+- Added default View for tracking mentions.
+- Added Views integration.
 - Added improved handling of deleted mentions.
 - Added database schema and CRUD functions.
 - Initial 6.x release.

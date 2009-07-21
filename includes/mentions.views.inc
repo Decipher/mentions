@@ -14,11 +14,17 @@ function mentions_views_handlers() {
       'path' => drupal_get_path('module', 'mentions') .'/includes',
     ),
     'handlers' => array(
-      'mentions_views_handler_field_user_name' => array(
-        'parent' => 'views_handler_field_user_name',
+      'mentions_views_handler_field_content' => array(
+        'parent' => 'views_handler_field',
+      ),
+      'mentions_views_handler_field_link' => array(
+        'parent' => 'views_handler_field',
       ),
       'mentions_views_handler_field_title' => array(
         'parent' => 'views_handler_field',
+      ),
+      'mentions_views_handler_field_user_name' => array(
+        'parent' => 'views_handler_field_user_name',
       ),
     ),
   );
@@ -37,39 +43,25 @@ function mentions_views_data() {
     'weight' => 10,
   );
 
-  // Mention user id.
-  $data['mentions']['uid'] = array(
-    'title' => t('User'),
-    'help' => t('The user mentioned.'),
+  // Content.
+  $data['mentions']['content'] = array(
+    'title' => t('Content'),
+    'help' => t('The contents of the mention.'),
     'field' => array(
-      'handler' => 'mentions_views_handler_field_user_name',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
+      'handler' => 'mentions_views_handler_field_content',
     ),
   );
 
-  // Mention author id.
-  $data['mentions']['auid'] = array(
-    'title' => t('Author'),
-    'help' => t("The name of the mention's author."),
+  // Link.
+  $data['mentions']['link'] = array(
+    'title' => t('Link'),
+    'help' => t('The link to the mention.'),
     'field' => array(
-      'handler' => 'mentions_views_handler_field_user_name',
-      'click sortable' => TRUE,
-    ),
-    'sort' => array(
-      'handler' => 'views_handler_sort',
-    ),
-    'argument' => array(
-      'handler' => 'views_handler_argument_string',
+      'handler' => 'mentions_views_handler_field_link',
     ),
   );
 
-  // Mention timestamp.
+  // Timestamp.
   $data['mentions']['timestamp'] = array(
     'title' => t('Date'),
     'help' => t("The date of the mention."),
@@ -85,12 +77,44 @@ function mentions_views_data() {
     ),
   );
 
-  // Mention title.
+  // Title.
   $data['mentions']['title'] = array(
+    'title' => t('Title'),
+    'help' => t('The title of the mention.'),
     'field' => array(
-      'title' => t('Title'),
-      'help' => t('The title of the mention.'),
       'handler' => 'mentions_views_handler_field_title',
+    ),
+  );
+
+  // User name - Author.
+  $data['mentions']['auid'] = array(
+    'title' => t('Author'),
+    'help' => t("The name of the mention's author."),
+    'field' => array(
+      'handler' => 'mentions_views_handler_field_user_name',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
+    ),
+  );
+
+  // User name - Mentioned.
+  $data['mentions']['uid'] = array(
+    'title' => t('User'),
+    'help' => t('The user mentioned.'),
+    'field' => array(
+      'handler' => 'mentions_views_handler_field_user_name',
+      'click sortable' => TRUE,
+    ),
+    'sort' => array(
+      'handler' => 'views_handler_sort',
+    ),
+    'argument' => array(
+      'handler' => 'views_handler_argument_string',
     ),
   );
 
@@ -99,6 +123,11 @@ function mentions_views_data() {
 
 function mentions_views_data_alter(&$data) {
   $data['node']['table']['join']['mentions'] = array(
+    'left_table' => 'mentions',
+    'left_field' => 'nid',
+    'field' => 'nid',
+  );
+  $data['node_revisions']['table']['join']['mentions'] = array(
     'left_table' => 'mentions',
     'left_field' => 'nid',
     'field' => 'nid',
