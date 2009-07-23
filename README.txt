@@ -1,8 +1,8 @@
 // $Id$
 
 The Mentions module offers Twitter like functionality, recording all references
-to a user's username - using the [@username] or [@#uid] filter format - in all
-Nodes and Comments, providing a centralized page to track all mentions.
+to a user's username - using the [@username] or [@#uid] filter format - from
+various locations, providing a centralized page to track all mentions.
 
 Mentions was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
@@ -11,6 +11,11 @@ Mentions was written and is maintained by Stuart Clark (deciphered).
 Features
 -------------------
 
+* Tracks Mentions from supported modules:
+  * Drupal core Node module.
+  * Drupal core Comment module.
+  * Facebook-style Statuses (Microblog) module.
+    * http://drupal.org/project/facebook_status
 * An Input filter to convert [@username] or [@#uid] to the user's profile.
 * Customizable input ([@username], [@#uid]) and output (@username) patterns,
   including support for the Token module.

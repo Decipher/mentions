@@ -7,8 +7,15 @@
 class mentions_views_handler_field_link extends views_handler_field {
   function construct() {
     parent::construct();
-    $this->additional_fields['nid'] = 'nid';
-    $this->additional_fields['cid'] = 'cid';
+    $this->additional_fields['type'] = 'type';
+    $this->additional_fields['mid'] = 'mid';
+
+    // Invoke mentions_hook_views_handler_field_link_fields().
+    foreach (module_list() as $module) {
+      if (function_exists($function = 'mentions_'. $module .'_views_handler_field_link_fields')) {
+        $function($this);
+      }
+    }
   }
 
   function option_definition() {
@@ -34,11 +41,16 @@ class mentions_views_handler_field_link extends views_handler_field {
   }
 
   function render($values) {
-    $options = is_null($values->{$this->aliases['cid']}) ? array()
-      : array('fragment' => 'comment-'. $values->{$this->aliases['cid']});
+    $link = array('options' => array());
 
-    $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
-    $nid = $values->{$this->aliases['nid']};
-    return l($text, "node/$nid", $options);
+    // Invoke mentions_hook_views_handler_field_link().
+    if (function_exists($function = 'mentions_'. $values->{$this->aliases['type']} .'_views_handler_field_link')) {
+      $function($this, $values, $link);
+
+      $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
+      return l($text, $link['url'], $link['options']);
+    }
+
+    return FALSE;
   }
 }

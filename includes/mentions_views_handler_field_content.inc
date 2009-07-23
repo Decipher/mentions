@@ -7,9 +7,14 @@
 class mentions_views_handler_field_content extends views_handler_field {
   function construct() {
     parent::construct();
-    $this->additional_fields['body'] = array('table' => 'node_revisions', 'field' => 'body');
-    $this->additional_fields['format'] = array('table' => 'node_revisions', 'field' => 'format');
-    $this->additional_fields['comment'] = array('table' => 'comments', 'field' => 'comment');
+    $this->additional_fields['type'] = 'type';
+
+    // Invoke mentions_hook_views_handler_field_content_fields().
+    foreach (module_list() as $module) {
+      if (function_exists($function = 'mentions_'. $module .'_views_handler_field_content_fields')) {
+        $function($this);
+      }
+    }
   }
 
   function query() {
@@ -18,12 +23,14 @@ class mentions_views_handler_field_content extends views_handler_field {
   }
 
   function render($values) {
-    $this->field_alias = is_null($values->{$this->aliases['comment']}) ? $this->aliases['body'] : $this->aliases['comment'];
+    // Invoke mentions_hook_views_handler_field_content().
+    if (function_exists($function = 'mentions_'. $values->{$this->aliases['type']} .'_views_handler_field_content')) {
+      $function($this, $values, $link);
 
-    $value = $values->{$this->field_alias};
-    $format = $values->{$this->aliases['format']};
+      return check_markup($function($this, $values));
+    }
 
-    return check_markup($value, $format, FALSE);
+    return FALSE;
   }
 
   function element_type() {

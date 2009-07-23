@@ -23,6 +23,17 @@ function mentions_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Implementation of hook_init().
+ */
+function mentions_init() {
+  foreach (module_list() as $module) {
+    if (file_exists($file = drupal_get_path('module', 'mentions') .'/modules/'. $module .'.inc')) {
+      require_once $file;
+    }
+  }
+}
+
+/**
  * Implementation of hook_filter_tips().
  */
 function mentions_filter_tips($delta, $format, $long = FALSE) {
@@ -65,11 +76,14 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
         '#value' => t('Input') .':',
       );
       $form['mentions']['input']['mentions_input_prefix'] = array(
+        '#title' => 'Input prefix',
         '#type' => 'textfield',
         '#size' => 2,
         '#default_value' => variable_get('mentions_input_prefix', '[@'),
+        '#required' => TRUE,
       );
       $form['mentions']['input']['mentions_input_suffix'] = array(
+        '#title' => 'Input suffix',
         '#type' => 'textfield',
         '#size' => 2,
         '#default_value' => variable_get('mentions_input_suffix', ']'),
@@ -79,11 +93,13 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
         '#value' => t('Output') .':',
       );
       $form['mentions']['output']['mentions_output_prefix'] = array(
+        '#title' => 'Output prefix',
         '#type' => 'textfield',
         '#size' => 2,
         '#default_value' => variable_get('mentions_output_prefix', '@'),
       );
       $form['mentions']['output']['mentions_output_suffix'] = array(
+        '#title' => 'Output suffix',
         '#type' => 'textfield',
         '#size' => 2,
         '#default_value' => variable_get('mentions_output_suffix', ''),
@@ -113,44 +129,13 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
 }
 
 /**
- * Implementation of hook_nodeapi().
- */
-function mentions_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
-  switch ($op) {
-    case 'insert':
-    case 'update':
-      _mentions_update(mentions_find_users($node->body), $node->uid, $node->nid);
-      break;
-
-    case 'delete':
-      _mentions_delete($node->nid);
-      break;
-  }
-}
-
-/**
- * Implementation of hook_comment().
- */
-function mentions_comment(&$a1, $op) {
-  switch ($op) {
-    case 'publish':
-      _mentions_update(mentions_find_users($a1['comment']), $a1['uid'], $a1['nid'], $a1['cid']);
-      break;
-
-    case 'delete':
-      _mentions_delete($a1->nid, $a1->cid);
-      break;
-  }
-}
-
-/**
  * Insert and Remove mentions on node/comment update/insert.
  */
-function _mentions_update($mentions, $auid, $nid, $cid = NULL) {
+function _mentions_update($type, $mentions, $mid, $auid) {
   // Build array of old mentions.
   $old_users = array();
   $result = db_query(
-    "SELECT uid FROM {mentions} WHERE nid = %d AND cid ". (is_null($cid) ? "IS NULL" : "= %d"), $nid, $cid
+    "SELECT uid FROM {mentions} WHERE type = %s AND mid = %d", $type, $nid
   );
   while ($data = db_fetch_object($result)) {
     $old_users[] = $data->uid;
@@ -167,15 +152,15 @@ function _mentions_update($mentions, $auid, $nid, $cid = NULL) {
   // Add new user mentions.
   foreach (array_diff($new_users, $old_users) as $user) {
     db_query(
-      "INSERT INTO {mentions} (uid, auid, nid, timestamp". (!is_null($cid) ? ", cid" : "") .")
-      VALUES (%d, %d, %d, %d". (!is_null($cid) ? ", %d" : "") .")", $user, $auid, $nid, time(), $cid
+      "INSERT INTO {mentions} (type, mid, uid, auid, timestamp) VALUES ('%s', %d, %d, %d, %d)",
+      $type, $mid, $user, $auid, time()
     );
   }
 
   // Remove old mentions.
   foreach (array_diff($old_users, $new_users) as $user) {
     db_query(
-      "DELETE FROM {mentions} WHERE uid = %d AND nid = %d". (!is_null($cid) ? " AND cid = %d" : ""), $user, $nid, $cid
+      "DELETE FROM {mentions} WHERE type = '%s' AND mid = %d AND uid = %d", $type, $mid, $user
     );
   }
 }
@@ -183,8 +168,8 @@ function _mentions_update($mentions, $auid, $nid, $cid = NULL) {
 /**
  * Remove mentions on node/comment deletion.
  */
-function _mentions_delete($nid, $cid = NULL) {
-  db_query("DELETE FROM {mentions} WHERE nid = %d". (!is_null($cid) ? " AND cid = %d" : ""), $nid, $cid);
+function _mentions_delete($type, $mid) {
+  db_query("DELETE FROM {mentions} WHERE type = '%s' AND mid = %d", $type, $mid);
 }
 
 /**
@@ -238,14 +223,14 @@ function mentions_views_api() {
  *   A Drupal user account.
  */
 function theme_mentions($user) {
-  $attributes = array(
-    'class' => 'mentions mentions-'. $user->uid,
-    'title' => $user->name,
-  );
-
   $text = !module_exists('token')
     ? $user->name
     : token_replace(variable_get('mentions_output_content', '[user]'), 'user', $user);
+
+  $attributes = array(
+    'class' => 'mentions mentions-'. $user->uid,
+    'title' => $text,
+  );
 
   return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/'. $user->uid, array('attributes' => $attributes));
 }
@@ -268,8 +253,7 @@ function theme_mentions_filter_settings($form) {
   $rows = array();
 
   $content = array(
-    'input' => $user->name .'<br />'.
-               '#'. $user->uid,
+    'input' => $user->name .'<br />'. '#'. $user->uid,
     'output' => !module_exists('token') ? $user->name : drupal_render($form['output']['mentions_output_content']),
   );
 
@@ -282,6 +266,9 @@ function theme_mentions_filter_settings($form) {
     if ($element == 'tokens') {
       continue;
     }
+
+    unset($form[$element]['mentions_'. $element .'_prefix']['#title']);
+    unset($form[$element]['mentions_'. $element .'_suffix']['#title']);
 
     $rows[] = array(
       '<strong>'. $form[$element]['#value'] .'</strong>',

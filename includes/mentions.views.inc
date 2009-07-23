@@ -122,19 +122,9 @@ function mentions_views_data() {
 }
 
 function mentions_views_data_alter(&$data) {
-  $data['node']['table']['join']['mentions'] = array(
-    'left_table' => 'mentions',
-    'left_field' => 'nid',
-    'field' => 'nid',
-  );
-  $data['node_revisions']['table']['join']['mentions'] = array(
-    'left_table' => 'mentions',
-    'left_field' => 'nid',
-    'field' => 'nid',
-  );
-  $data['comments']['table']['join']['mentions'] = array(
-    'left_table' => 'mentions',
-    'left_field' => 'cid',
-    'field' => 'cid',
-  );
+  foreach (module_list() as $module) {
+    if (function_exists($function = 'mentions_'. $module .'_views_data_alter')) {
+      $function($data);
+    }
+  }
 }

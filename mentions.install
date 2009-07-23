@@ -11,10 +11,10 @@
 function mentions_schema() {
   $schema['mentions'] = array(
     'fields' => array(
+      'type' => array('type' => 'varchar', 'length' => 32, 'not null' => TRUE, 'default' => ''),
+      'mid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
       'auid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'nid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
-      'cid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => FALSE),
       'timestamp' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
     ),
     'indexes' => array(

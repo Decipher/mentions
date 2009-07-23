@@ -4,6 +4,7 @@ Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
 - #521862: Added customizable input and output patterns.
+- Added support for Facebook-style Statuses (Microblog) module.
 - Added SimpleTest.
 - Added Content and Link fields to Views integration.
 - Added support for Token module.

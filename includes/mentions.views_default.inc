@@ -225,10 +225,10 @@ function mentions_views_default_views() {
   $handler = $view->new_display('page', 'Page', 'page_1');
   $handler->override_option('path', 'user/%/mentions');
   $handler->override_option('menu', array(
-    'type' => 'none',
-    'title' => '',
-    'description' => '',
-    'weight' => 0,
+    'type' => 'tab',
+    'title' => 'Mentions',
+    'description' => 'Mentions',
+    'weight' => '0',
     'name' => 'navigation',
   ));
   $handler->override_option('tab_options', array(
