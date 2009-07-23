@@ -135,7 +135,7 @@ function _mentions_update($type, $mentions, $mid, $auid) {
   // Build array of old mentions.
   $old_users = array();
   $result = db_query(
-    "SELECT uid FROM {mentions} WHERE type = %s AND mid = %d", $type, $nid
+    "SELECT uid FROM {mentions} WHERE type = '%s' AND mid = %d", $type, $nid
   );
   while ($data = db_fetch_object($result)) {
     $old_users[] = $data->uid;
