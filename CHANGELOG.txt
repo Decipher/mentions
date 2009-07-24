@@ -3,6 +3,10 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+
+Mentions 6.x-1.0, 2009-07-24
+----------------------------
+
 - #521862: Added customizable input and output patterns.
 - Added support for Facebook-style Statuses (Microblog) module.
 - Added SimpleTest.
