@@ -3,16 +3,16 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  mentions.module,v 1.6 2009/07/21 05:18:00 deciphered
-#  mentions.views.inc,v 1.2 2009/07/21 05:18:00 deciphered
+#  mentions.module,v 1.8 2009/07/23 05:44:01 deciphered
+#  mentions.views.inc,v 1.3 2009/07/23 05:20:03 deciphered
 #  mentions.info,v 1.3 2009/07/20 03:17:24 deciphered
-#  mentions_views_handler_field_link.inc,v 1.1 2009/07/21 05:18:00 deciphered
+#  mentions_views_handler_field_link.inc,v 1.2 2009/07/23 05:20:03 deciphered
 #
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-07-23 15:41+1000\n"
+"POT-Creation-Date: 2009-07-27 11:38+1000\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -37,39 +37,47 @@ msgstr ""
 msgid "Define input and output patterns for the Mentions filter."
 msgstr ""
 
-#: mentions.module:71
+#: mentions.module:72
 msgid "Note:"
 msgstr ""
 
-#: mentions.module:71
+#: mentions.module:72
 msgid "If you do not define an input suffix, usernames containing a space will not work correctly."
 msgstr ""
 
-#: mentions.module:76
+#: mentions.module:73
+msgid "Warning:"
+msgstr ""
+
+#: mentions.module:73
+msgid "If you do not define an input prefix, usernames containing a space will not work correctly\r\n             and you may receive false positives, break HTML elements and your site layout, and add unnecessary server load. It is strongly suggested to use an Input filter."
+msgstr ""
+
+#: mentions.module:80
 msgid "Input"
 msgstr ""
 
-#: mentions.module:93
+#: mentions.module:96
 msgid "Output"
 msgstr ""
 
-#: mentions.module:117
+#: mentions.module:120
 msgid "Replacement tokens"
 msgstr ""
 
-#: mentions.module:252
+#: mentions.module:261
 msgid "Prefix"
 msgstr ""
 
-#: mentions.module:252 includes/mentions.views.inc:48
+#: mentions.module:261 includes/mentions.views.inc:48
 msgid "Content"
 msgstr ""
 
-#: mentions.module:252
+#: mentions.module:261
 msgid "Suffix"
 msgstr ""
 
-#: mentions.module:252
+#: mentions.module:261
 msgid "Example"
 msgstr ""
 

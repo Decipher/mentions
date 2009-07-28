@@ -3,6 +3,8 @@
 Mentions 6.x-1.x-dev, xxxx-xx-xx (development release)
 ----------------------------
 
+- Added support for non-prefixed input patterns.
+
 
 Mentions 6.x-1.0, 2009-07-24
 ----------------------------
