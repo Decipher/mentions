@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Contains default views for the Mentions module.

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Contains Facebook-style Statuses module integration for the Mentions module.

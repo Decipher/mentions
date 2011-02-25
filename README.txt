@@ -1,4 +1,3 @@
-// $Id$
 
 The Mentions module offers Twitter like functionality, recording all references
 to a user's username - using the [@username] or [@#uid] filter format - from

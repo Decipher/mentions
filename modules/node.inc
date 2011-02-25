@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Contains Node module integration for the Mentions module.

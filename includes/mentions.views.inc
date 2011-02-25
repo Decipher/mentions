@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Contains views data and handlers for the Mentions module.

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  * Contains Comment module integration for the Mentions module.
