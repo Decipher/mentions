@@ -4,6 +4,17 @@
  * Contains core functions for the Mentions module.
  */
 
+ /**
+ * Implements hook_help().
+ */
+function mentions_help($path = 'admin/help#mentions', $arg) {
+  switch ($path) {
+    case 'admin/help#mentions':
+      $output = file_get_contents(drupal_get_path('module', 'mentions') . '/README.txt');
+      return '<pre>' . check_plain($output) . '</pre>';
+  }
+}
+
 /**
  * Implements hook_theme().
  */
