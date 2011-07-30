@@ -44,101 +44,122 @@ function mentions_init() {
 }
 
 /**
- * Implements hook_filter_tips().
- */
-function mentions_filter_tips($delta, $format, $long = FALSE) {
-  return t("!username or !uid creates a link the user's profile page.", array('!username' => theme('mentions_input', 'username'), '!uid' => theme('mentions_input', '#uid')));
+* Implements hook_filter_info().
+*/
+function mentions_filter_info() {
+  $values = array(
+    '!username' => theme_mentions_input('username'),
+    '!uid' => theme_mentions_input('#uid'),
+  );
+  $filters['filter_mentions'] = array(
+    'title' => t('Mentions Filter'),
+    'description' => t('Converts !username and !uid into a link to the user\'s profile page.', $values),
+    'process callback' => '_filter_mentions',
+    'settings callback' => '_filter_mentions_settings',
+    'tips callback' => '_filter_mentions_tips',
+    'cache' => FALSE,
+  );
+  return $filters;
+}
+
+// Filter callbacks.
+
+function _filter_mentions($text, $filter, $format) {
+
+  foreach (mentions_find_users($text) as $match) {
+    $text = str_replace($match['text'], theme_mentions($match['user']), $text);
+  }
+
+  return $text;
 }
 
 /**
- * Implements hook_filter().
- */
-function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
-  switch ($op) {
-    case 'list':
-      return array(0 => t("Mentions filter"));
+* Implements hook_filter_FILTER_settings().
+*
+* @see mentions_filter_info()
+*/
+function _filter_mentions_settings($form, &$form_state, $filter, $format, $defaults = array('mentions' => array('input' => array('mentions_input_prefix' => '[@', 'mentions_input_suffix' => ']'), 'output' => array(mentions_output_prefix => '@', 'mentions_output_suffix' => '', 'mentions_output_content' => '[user]'))), $filters) {
+  $filter->settings += $defaults;
 
-    case 'description':
-      return t("Converts !username and !uid into a link the user's profile page.", array('!username' => theme('mentions_input', 'username'), '!uid' => theme('mentions_input', '#uid')));
+  $settings = array();
+  $settings['mentions'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Mentions filter'),
+    '#collapsible' => TRUE,
+    '#description' =>
+      t('Define input and output patterns for the Mentions filter.')
+      . '<p>' .
+        '<strong>' . t('Note:') . '</strong> ' . t('If you do not define an input suffix, usernames containing a space will not work correctly.') . '<br />' .
+        '<strong>' . t('Warning:') . '</strong> ' . t('If you do not define an input prefix, usernames containing a space will not work correctly
+and you may receive false positives, break HTML elements and your site layout, and add unnecessary server load. It is strongly suggested to use an Input filter.')
+      . '</p>'
+    ,
+  );
 
-    case 'process':
-      foreach (mentions_find_users($text) as $match) {
-        $text = str_replace($match['text'], theme('mentions', $match['user']), $text);
-      }
+  $settings['mentions']['input'] = array(
+    '#value' => t('Input') . ':',
+  );
+  $settings['mentions']['input']['mentions_input_prefix'] = array(
+    '#title' => 'Input prefix',
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#default_value' => variable_get('mentions_input_prefix', '[@'),
+    '#required' => TRUE,
+  );
+  $settings['mentions']['input']['mentions_input_suffix'] = array(
+    '#title' => 'Input suffix',
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#default_value' => variable_get('mentions_input_suffix', ']'),
+    '#required' => TRUE,
+  );
 
-      return $text;
+  $settings['mentions']['output'] = array(
+    '#value' => t('Output') . ':',
+  );
+  $settings['mentions']['output']['mentions_output_prefix'] = array(
+    '#title' => 'Output prefix',
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#default_value' => variable_get('mentions_output_prefix', '@'),
+  );
+  $settings['mentions']['output']['mentions_output_suffix'] = array(
+    '#title' => 'Output suffix',
+    '#type' => 'textfield',
+    '#size' => 2,
+    '#default_value' => variable_get('mentions_output_suffix', ''),
+  );
 
-    case 'settings':
-      $form = array();
-
-      $form['mentions'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Mentions filter'),
-        '#collapsible' => TRUE,
-        '#theme' => 'mentions_filter_settings',
-        '#description' =>
-          t('Define input and output patterns for the Mentions filter.')
-          . '<p>' .
-            '<strong>' . t('Note:') . '</strong> '. t('If you do not define an input suffix, usernames containing a space will not work correctly.') . '<br />'.
-            '<strong>'. t('Warning:') . '</strong> '. t('If you do not define an input prefix, usernames containing a space will not work correctly
-             and you may receive false positives, break HTML elements and your site layout, and add unnecessary server load. It is strongly suggested to use an Input filter.')
-          . '</p>'
-        ,
-      );
-
-      $form['mentions']['input'] = array(
-        '#value' => t('Input') . ':',
-      );
-      $form['mentions']['input']['mentions_input_prefix'] = array(
-        '#title' => 'Input prefix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_input_prefix', '[@'),
-      );
-      $form['mentions']['input']['mentions_input_suffix'] = array(
-        '#title' => 'Input suffix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_input_suffix', ']'),
-      );
-
-      $form['mentions']['output'] = array(
-        '#value' => t('Output') . ':',
-      );
-      $form['mentions']['output']['mentions_output_prefix'] = array(
-        '#title' => 'Output prefix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_output_prefix', '@'),
-      );
-      $form['mentions']['output']['mentions_output_suffix'] = array(
-        '#title' => 'Output suffix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_output_suffix', ''),
-      );
-
-      // Support for token module.
-      if (module_exists('token')) {
-        $form['mentions']['output']['mentions_output_content'] = array(
-          '#type' => 'textfield',
-          '#size' => 20,
-          '#default_value' => variable_get('mentions_output_content', '[user]'),
-        );
-        $form['mentions']['tokens'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Replacement tokens'),
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          '#description' => theme('token_help', 'user'),
-        );
-      }
-
-      return $form;
-
-    default:
-      return $text;
+  // Support for token module.
+  if (module_exists('token')) {
+    $form['mentions']['output']['mentions_output_content'] = array(
+      '#type' => 'textfield',
+      '#size' => 20,
+      '#default_value' => variable_get('mentions_output_content', '[user]'),
+    );
+    $form['mentions']['tokens'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Replacement tokens'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#description' => theme('token_help', 'user'),
+    );
   }
+
+  return $settings;
+}
+
+/**
+* Implements hook_filter_FILTER_tips().
+*
+* @see mentions_filter_info()
+*/
+function _filter_mentions_tips($filter, $format, $long = FALSE) {
+  $values = array(
+    '!username' => theme_mentions_input('username'),
+    '!uid' => theme_mentions_input('#uid'),
+  );
+  return t('!username or !uid creates a link to the user\'s profile page.', $values);
 }
 
 /**
