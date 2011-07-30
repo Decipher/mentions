@@ -26,9 +26,6 @@ function mentions_theme($existing, $type, $theme, $path) {
     'mentions_input' => array(
       'arguments' => array('text' => NULL, 'raw' => FALSE),
     ),
-    'mentions_filter_settings' => array(
-      'arguments' => array('form' => array()),
-    ),
   );
 }
 
@@ -273,56 +270,4 @@ function theme_mentions($user) {
   );
 
   return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/' . $user->uid, array('attributes' => $attributes));
-}
-
-/**
- * Return mentions input format.
- *
- * @param $text
- *   Text to be displayed as mentions input format.
- */
-function theme_mentions_input($text, $raw = FALSE) {
-  $text = variable_get('mentions_input_prefix', '[@') . $text . variable_get('mentions_input_suffix', ']');
-  return $raw ? $text : '<strong>' . $text . '</strong>';
-}
-
-function theme_mentions_filter_settings($form) {
-  global $user;
-
-  $header = array('', t('Prefix'), t('Content'), t('Suffix'), t('Example'));
-  $rows = array();
-
-  $content = array(
-    'input' => $user->name . '<br />' . '#' . $user->uid,
-    'output' => !module_exists('token') ? $user->name : drupal_render($form['output']['mentions_output_content']),
-  );
-
-  $details = array(
-    'input' => theme('mentions_input', $user->name) . '<br />' . theme('mentions_input', '#' . $user->uid),
-    'output' => theme('mentions', $user),
-  );
-
-  foreach (element_children($form) as $element) {
-    if ($element == 'tokens') {
-      continue;
-    }
-
-    unset($form[$element]['mentions_' . $element . '_prefix']['#title']);
-    unset($form[$element]['mentions_' . $element . '_suffix']['#title']);
-
-    $rows[] = array(
-      '<strong>' . $form[$element]['#value'] . '</strong>',
-      drupal_render($form[$element]['mentions_' . $element . '_prefix']),
-      $content[$element],
-      drupal_render($form[$element]['mentions_' . $element . '_suffix']),
-      $details[$element],
-    );
-  }
-
-  $output = theme('table', $header, $rows);
-  if (module_exists('token')) {
-    $output .= drupal_render($form['tokens']);
-  }
-
-  return $output;
 }
