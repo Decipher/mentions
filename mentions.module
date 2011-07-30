@@ -271,3 +271,14 @@ function theme_mentions($user) {
 
   return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/' . $user->uid, array('attributes' => $attributes));
 }
+
+/**
+ * Return mentions input format.
+ *
+ * @param $text
+ *   Text to be displayed as mentions input format.
+ */
+function theme_mentions_input($text, $raw = FALSE) {
+  $text = variable_get('mentions_input_prefix', '[@') . $text . variable_get('mentions_input_suffix', ']');
+  return $raw ? $text : '<strong>' . $text . '</strong>';
+}
