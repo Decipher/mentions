@@ -228,10 +228,10 @@ function mentions_find_users($text) {
   if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
     foreach ($matches as $match) {
       $user = (drupal_substr($match[2], 0, 1) == '#')
-        ? user_load(array('uid' => drupal_substr($match[2], 1)))
+        ? user_load(drupal_substr($match[2], 1))
         : (($match[1] == '#')
-          ? user_load(array('uid' => $match[2]))
-          : user_load(array('name' => $match[2])));
+          ? user_load($match[2])
+          : user_load_by_name($match[2]));
 
       if (is_object($user)) {
         $users[] = array(
