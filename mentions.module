@@ -26,7 +26,7 @@ function mentions_theme($existing, $type, $theme, $path) {
  */
 function mentions_init() {
   foreach (module_list() as $module) {
-    if (file_exists($file = drupal_get_path('module', 'mentions') .'/modules/'. $module .'.inc')) {
+    if (file_exists($file = drupal_get_path('module', 'mentions') . '/modules/' . $module . '.inc')) {
       require_once $file;
     }
   }
@@ -67,16 +67,16 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
         '#theme' => 'mentions_filter_settings',
         '#description' =>
           t('Define input and output patterns for the Mentions filter.')
-          .'<p>'.
-            '<strong>'. t('Note:') .'</strong> '. t('If you do not define an input suffix, usernames containing a space will not work correctly.') .'<br />'.
-            '<strong>'. t('Warning:') .'</strong> '. t('If you do not define an input prefix, usernames containing a space will not work correctly
+          . '<p>' .
+            '<strong>' . t('Note:') . '</strong> '. t('If you do not define an input suffix, usernames containing a space will not work correctly.') . '<br />'.
+            '<strong>'. t('Warning:') . '</strong> '. t('If you do not define an input prefix, usernames containing a space will not work correctly
              and you may receive false positives, break HTML elements and your site layout, and add unnecessary server load. It is strongly suggested to use an Input filter.')
-          .'</p>'
+          . '</p>'
         ,
       );
 
       $form['mentions']['input'] = array(
-        '#value' => t('Input') .':',
+        '#value' => t('Input') . ':',
       );
       $form['mentions']['input']['mentions_input_prefix'] = array(
         '#title' => 'Input prefix',
@@ -92,7 +92,7 @@ function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
       );
 
       $form['mentions']['output'] = array(
-        '#value' => t('Output') .':',
+        '#value' => t('Output') . ':',
       );
       $form['mentions']['output']['mentions_output_prefix'] = array(
         '#title' => 'Output prefix',
@@ -187,10 +187,10 @@ function mentions_find_users($text) {
 
   $pattern = variable_get('mentions_input_prefix', '[@') != ''
     ? (variable_get('mentions_input_suffix', ']') != ''
-      ? '/\B('. preg_quote(variable_get('mentions_input_prefix', '[@')) .'|'. preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) .')(\#?.*?)('. preg_quote(variable_get('mentions_input_suffix', ']')) .'|'. preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) .')/'
-      : '/\B('. preg_quote(variable_get('mentions_input_prefix', '[@')) .'|'. preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) .')(\#?\w*)/')
+      ? '/\B(' . preg_quote(variable_get('mentions_input_prefix', '[@')) . '|' . preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) . ')(\#?.*?)(' . preg_quote(variable_get('mentions_input_suffix', ']')) . '|' . preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) . ')/'
+      : '/\B(' . preg_quote(variable_get('mentions_input_prefix', '[@')) . '|' . preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) .')(\#?\w*)/')
     : (variable_get('mentions_input_suffix', ']') != ''
-      ? '/(\b|\#)(\w*)('. preg_quote(variable_get('mentions_input_suffix', ']')) .'|'. preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) .')/'
+      ? '/(\b|\#)(\w*)(' . preg_quote(variable_get('mentions_input_suffix', ']')) . '|' . preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) . ')/'
       : '/(\b|\#)(\w*)/');
 
   if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
@@ -220,7 +220,7 @@ function mentions_find_users($text) {
 function mentions_views_api() {
   return array(
     'api' => 2,
-    'path' => drupal_get_path('module', 'mentions') .'/includes',
+    'path' => drupal_get_path('module', 'mentions') . '/includes',
   );
 }
 
@@ -236,11 +236,11 @@ function theme_mentions($user) {
     : token_replace(variable_get('mentions_output_content', '[user]'), 'user', $user);
 
   $attributes = array(
-    'class' => 'mentions mentions-'. $user->uid,
+    'class' => 'mentions mentions-' . $user->uid,
     'title' => $text,
   );
 
-  return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/'. $user->uid, array('attributes' => $attributes));
+  return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/' . $user->uid, array('attributes' => $attributes));
 }
 
 /**
@@ -251,7 +251,7 @@ function theme_mentions($user) {
  */
 function theme_mentions_input($text, $raw = FALSE) {
   $text = variable_get('mentions_input_prefix', '[@') . $text . variable_get('mentions_input_suffix', ']');
-  return $raw ? $text : '<strong>'. $text .'</strong>';
+  return $raw ? $text : '<strong>' . $text . '</strong>';
 }
 
 function theme_mentions_filter_settings($form) {
@@ -261,12 +261,12 @@ function theme_mentions_filter_settings($form) {
   $rows = array();
 
   $content = array(
-    'input' => $user->name .'<br />'. '#'. $user->uid,
+    'input' => $user->name . '<br />' . '#' . $user->uid,
     'output' => !module_exists('token') ? $user->name : drupal_render($form['output']['mentions_output_content']),
   );
 
   $details = array(
-    'input' => theme('mentions_input', $user->name) .'<br />'. theme('mentions_input', '#'. $user->uid),
+    'input' => theme('mentions_input', $user->name) . '<br />' . theme('mentions_input', '#' . $user->uid),
     'output' => theme('mentions', $user),
   );
 
@@ -275,14 +275,14 @@ function theme_mentions_filter_settings($form) {
       continue;
     }
 
-    unset($form[$element]['mentions_'. $element .'_prefix']['#title']);
-    unset($form[$element]['mentions_'. $element .'_suffix']['#title']);
+    unset($form[$element]['mentions_' . $element . '_prefix']['#title']);
+    unset($form[$element]['mentions_' . $element . '_suffix']['#title']);
 
     $rows[] = array(
-      '<strong>'. $form[$element]['#value'] .'</strong>',
-      drupal_render($form[$element]['mentions_'. $element .'_prefix']),
+      '<strong>' . $form[$element]['#value'] . '</strong>',
+      drupal_render($form[$element]['mentions_' . $element . '_prefix']),
       $content[$element],
-      drupal_render($form[$element]['mentions_'. $element .'_suffix']),
+      drupal_render($form[$element]['mentions_' . $element . '_suffix']),
       $details[$element],
     );
   }
