@@ -243,17 +243,6 @@ function mentions_find_users($text) {
 }
 
 /**
- * Implements hook_views_api.
- * Notifies the Views module that we're compatible with a particular API revision.
- */
-function mentions_views_api() {
-  return array(
-    'api' => 2,
-    'path' => drupal_get_path('module', 'mentions') . '/includes',
-  );
-}
-
-/**
  * Return a '@username' link to user's profile.
  *
  * @param $user
