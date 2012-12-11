@@ -5,142 +5,149 @@
  */
 
 /**
- * Implementation of hook_theme().
+ * Include additional files.
  */
-function mentions_theme($existing, $type, $theme, $path) {
-  return array(
-    'mentions' => array(
-      'arguments' => array('user' => array()),
-    ),
-    'mentions_input' => array(
-      'arguments' => array('text' => NULL, 'raw' => FALSE),
-    ),
-    'mentions_filter_settings' => array(
-      'arguments' => array('form' => array()),
-    ),
-  );
+$dirname = dirname(__FILE__);
+$includes = file_scan_directory($dirname . "/includes", '/.inc$/');
+foreach (module_list() as $module) {
+  if (isset($includes[$file = $dirname . "/includes/{$module}.inc"])) {
+    require_once $file;
+  }
 }
 
 /**
- * Implementation of hook_init().
+ * Implements hook_menu().
  */
-function mentions_init() {
-  foreach (module_list() as $module) {
-    if (file_exists($file = drupal_get_path('module', 'mentions') .'/modules/'. $module .'.inc')) {
-      require_once $file;
+function mentions_menu() {
+  $items = array();
+
+  $items['admin/config/content/mentions'] = array(
+    'title' => 'Mentions',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('mentions_form'),
+    'access arguments' => array('administer filters'),
+    'file' => 'mentions.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function mentions_theme() {
+  $items = array();
+
+  $items['mentions'] = array(
+    'variables' => array(
+      'user' => array(),
+    ),
+  );
+
+  $items['mentions_input'] = array(
+    'variables' => array(
+      'text' => NULL,
+      'raw' => FALSE,
+    ),
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_filter_info().
+ */
+function mentions_filter_info() {
+  $filters = array();
+
+  $filters['filter_mentions'] = array(
+    'title' => t("Mentions filter"),
+    'description' => t("Converts @username and @uid into a link the user's profile page.", array(
+      '@username' => theme('mentions_input', array('text' => 'username', 'raw' => TRUE)),
+      '@uid' => theme('mentions_input', array('text' => '#uid', 'raw' => TRUE)),
+    )),
+    'process callback' => 'mentions_filter_filter_mentions_process',
+    'tips callback' => 'mentions_filter_filter_mentions_tips',
+  );
+
+  return $filters;
+}
+
+/**
+ * Process callback for Mentions filter.
+ */
+function mentions_filter_filter_mentions_process($text, $filter, $format) {
+  foreach (mentions_get_mentions($text) as $match) {
+    $text = str_replace($match['text'], theme('mentions', array('user' => $match['user'])), $text);
+  }
+  return $text;
+}
+
+/**
+ * Tips callback for Mentions filter.
+ */
+function mentions_filter_filter_mentions_tips($format, $long = FALSE) {
+  return t("Converts @username and @uid into a link the user's profile page.", array(
+    '@username' => theme('mentions_input', array('text' => 'username')),
+    '@uid' => theme('mentions_input', array('text' => '#uid')),
+  ));
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function mentions_entity_insert($entity, $type) {
+  $mentions = array();
+  $filters = array();
+  list($id, $vid, $bundle_name) = entity_extract_ids($type, $entity);
+  $instances = field_info_instances($type, $bundle_name);
+  foreach ($instances as $instance) {
+    if ('text' == $instance['widget']['module']) {
+      $items = field_get_items($type, $entity, $instance['field_name']);
+      foreach ($items as $item) {
+        if (!isset($filters[$item['format']])) {
+          $filter = filter_list_format($item['format']);
+          $filters[$item['format']] = isset($filter['filter_mentions']) && $filter['filter_mentions']->status;
+        }
+        if ($filters[$item['format']]) {
+          $mentions = array_merge($mentions, mentions_get_mentions($item['value']));
+        }
+      }
     }
   }
+  mentions_crud_update($type, $mentions, $id, $entity->uid);
 }
 
 /**
- * Implementation of hook_filter_tips().
+ * Implements hook_entity_update().
  */
-function mentions_filter_tips($delta, $format, $long = FALSE) {
-  return t("!username or !uid creates a link the user's profile page.", array('!username' => theme('mentions_input', 'username'), '!uid' => theme('mentions_input', '#uid')));
+function mentions_entity_update($entity, $type) {
+  mentions_entity_insert($entity, $type);
 }
 
 /**
- * Implementation of hook_filter().
+ * Implements hook_entity_delete().
  */
-function mentions_filter($op, $delta = 0, $format = -1, $text = '') {
-  switch ($op) {
-    case 'list':
-      return array(0 => t("Mentions filter"));
-
-    case 'description':
-      return t("Converts !username and !uid into a link the user's profile page.", array('!username' => theme('mentions_input', 'username'), '!uid' => theme('mentions_input', '#uid')));
-
-    case 'process':
-      foreach (mentions_find_users($text) as $match) {
-        $text = str_replace($match['text'], theme('mentions', $match['user']), $text);
-      }
-
-      return $text;
-
-    case 'settings':
-      $form = array();
-
-      $form['mentions'] = array(
-        '#type' => 'fieldset',
-        '#title' => t('Mentions filter'),
-        '#collapsible' => TRUE,
-        '#theme' => 'mentions_filter_settings',
-        '#description' =>
-          t('Define input and output patterns for the Mentions filter.')
-          .'<p>'.
-            '<strong>'. t('Note:') .'</strong> '. t('If you do not define an input suffix, usernames containing a space will not work correctly.') .'<br />'.
-            '<strong>'. t('Warning:') .'</strong> '. t('If you do not define an input prefix, usernames containing a space will not work correctly
-             and you may receive false positives, break HTML elements and your site layout, and add unnecessary server load. It is strongly suggested to use an Input filter.')
-          .'</p>'
-        ,
-      );
-
-      $form['mentions']['input'] = array(
-        '#value' => t('Input') .':',
-      );
-      $form['mentions']['input']['mentions_input_prefix'] = array(
-        '#title' => 'Input prefix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_input_prefix', '[@'),
-      );
-      $form['mentions']['input']['mentions_input_suffix'] = array(
-        '#title' => 'Input suffix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_input_suffix', ']'),
-      );
-
-      $form['mentions']['output'] = array(
-        '#value' => t('Output') .':',
-      );
-      $form['mentions']['output']['mentions_output_prefix'] = array(
-        '#title' => 'Output prefix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_output_prefix', '@'),
-      );
-      $form['mentions']['output']['mentions_output_suffix'] = array(
-        '#title' => 'Output suffix',
-        '#type' => 'textfield',
-        '#size' => 2,
-        '#default_value' => variable_get('mentions_output_suffix', ''),
-      );
-
-      // Support for token module.
-      if (module_exists('token')) {
-        $form['mentions']['output']['mentions_output_content'] = array(
-          '#type' => 'textfield',
-          '#size' => 20,
-          '#default_value' => variable_get('mentions_output_content', '[user]'),
-        );
-        $form['mentions']['tokens'] = array(
-          '#type' => 'fieldset',
-          '#title' => t('Replacement tokens'),
-          '#collapsible' => TRUE,
-          '#collapsed' => TRUE,
-          '#description' => theme('token_help', 'user'),
-        );
-      }
-
-      return $form;
-
-    default:
-      return $text;
-  }
+function mentions_entity_delete($entity, $type) {
+  list($id, $vid, $bundle_name) = entity_extract_ids($type, $entity);
+  mentions_crud_delete($type, $id);
 }
 
 /**
- * Insert and Remove mentions on node/comment update/insert.
+ * CRUD functon; Update mentions.
  */
-function _mentions_update($type, $mentions, $mid, $auid) {
+function mentions_crud_update($type, $mentions, $mid, $auid) {
   // Build array of old mentions.
   $old_users = array();
-  $result = db_query(
-    "SELECT uid FROM {mentions} WHERE type = '%s' AND mid = %d", $type, $mid
-  );
-  while ($data = db_fetch_object($result)) {
-    $old_users[] = $data->uid;
+  $result = db_select('mentions', 'uid')
+    ->fields('uid')
+    ->condition('type', $type, '=')
+    ->condition('mid', $mid, '=')
+    ->execute();
+
+  while ($data = $result->fetchAssoc()) {
+    $old_users[] = $data['uid'];
   }
 
   // Build array of new mentions.
@@ -153,25 +160,35 @@ function _mentions_update($type, $mentions, $mid, $auid) {
 
   // Add new user mentions.
   foreach (array_diff($new_users, $old_users) as $user) {
-    db_query(
-      "INSERT INTO {mentions} (type, mid, uid, auid, timestamp) VALUES ('%s', %d, %d, %d, %d)",
-      $type, $mid, $user, $auid, time()
-    );
+    db_insert('mentions')
+      ->fields(array(
+        'type' => $type,
+        'mid' => $mid,
+        'uid' => $user,
+        'auid' => $auid,
+        'timestamp' => REQUEST_TIME,
+      ))
+      ->execute();
   }
 
   // Remove old mentions.
   foreach (array_diff($old_users, $new_users) as $user) {
-    db_query(
-      "DELETE FROM {mentions} WHERE type = '%s' AND mid = %d AND uid = %d", $type, $mid, $user
-    );
+    db_delete('mentions')
+      ->condition('type', $type)
+      ->condition('mid', $mid)
+      ->condition('uid', $user)
+      ->execute();
   }
 }
 
 /**
- * Remove mentions on node/comment deletion.
+ * CRUD fucntion; Delete metnions.
  */
-function _mentions_delete($type, $mid) {
-  db_query("DELETE FROM {mentions} WHERE type = '%s' AND mid = %d", $type, $mid);
+function mentions_crud_delete($type, $mid) {
+  db_delete('mentions')
+    ->condition('type', $type)
+    ->condition('mid', $mid)
+    ->execute();
 }
 
 /**
@@ -179,32 +196,47 @@ function _mentions_delete($type, $mid) {
  *
  * @param $text
  *   Text string for analysis.
- * @return
+ *
+ * @return array()
  *   An array of matched text and user accounts.
  */
-function mentions_find_users($text) {
+function mentions_get_mentions($text) {
+  $settings = variable_get('mentions', mentions_defaults());
   $users = array();
 
-  $pattern = variable_get('mentions_input_prefix', '[@') != ''
-    ? (variable_get('mentions_input_suffix', ']') != ''
-      ? '/\B('. preg_quote(variable_get('mentions_input_prefix', '[@')) .'|'. preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) .')(\#?.*?)('. preg_quote(variable_get('mentions_input_suffix', ']')) .'|'. preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) .')/'
-      : '/\B('. preg_quote(variable_get('mentions_input_prefix', '[@')) .'|'. preg_quote(check_plain(variable_get('mentions_input_prefix', '[@'))) .')(\#?\w*)/')
-    : (variable_get('mentions_input_suffix', ']') != ''
-      ? '/(\b|\#)(\w*)('. preg_quote(variable_get('mentions_input_suffix', ']')) .'|'. preg_quote(check_plain(variable_get('mentions_input_suffix', ']'))) .')/'
-      : '/(\b|\#)(\w*)/');
+  // Build regular expression pattern.
+  $pattern = '/(\b|\#)(\w*)/';
+  switch (TRUE) {
+    case !empty($settings['input']['prefix']) && !empty($settings['input']['suffix']):
+      $pattern = '/\B(' . preg_quote($settings['input']['prefix']) . '|' . preg_quote(check_plain($settings['input']['prefix'])) . ')(\#?.*?)(' . preg_quote($settings['input']['suffix']) . '|' . preg_quote(check_plain($settings['input']['suffix'])) . ')/';
+      break;
 
+    case !empty($settings['input']['prefix']) && empty($settings['input']['suffix']):
+      $pattern = '/\B(' . preg_quote($settings['input']['prefix']) . '|' . preg_quote(check_plain($settings['input']['prefix'])) . ')(\#?\w*)/';
+      break;
+
+    case empty($settings['input']['prefix']) && !empty($settings['input']['suffix']):
+      $pattern = '/(\b|\#)(\w*)(' . preg_quote($settings['input']['suffix']) . '|' . preg_quote(check_plain($settings['input']['suffix'])) . ')/';
+      break;
+  }
+
+  // Find all matching strings.
   if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
     foreach ($matches as $match) {
-      $user = (drupal_substr($match[2], 0, 1) == '#')
-        ? user_load(array('uid' => drupal_substr($match[2], 1)))
-        : (($match[1] == '#')
-          ? user_load(array('uid' => $match[2]))
-          : user_load(array('name' => $match[2])));
+      if (drupal_substr($match[2], 0, 1) == '#') {
+        $user = user_load(drupal_substr($match[2], 1));
+      }
+      elseif ($match[1] == '#') {
+        $user = user_load($match[2]);
+      }
+      else {
+        $user = user_load_by_name($match[2]);
+      }
 
       if (is_object($user)) {
         $users[] = array(
           'text' => $match[0],
-          'user' => $user
+          'user' => $user,
         );
       }
     }
@@ -214,83 +246,53 @@ function mentions_find_users($text) {
 }
 
 /**
- * Implementation of hook_views_api.
- * Notifies the Views module that we're compatible with a particular API revision.
+ * Helper function; Returns Mentions default settings.
  */
-function mentions_views_api() {
+function mentions_defaults() {
   return array(
-    'api' => 2,
-    'path' => drupal_get_path('module', 'mentions') .'/includes',
+    'input' => array(
+      'prefix' => '[@',
+      'suffix' => ']',
+    ),
+    'output' => array(
+      'prefix' => '@',
+      'suffix' => '',
+      'text' => '[user:name]',
+      'link' => 'user/[user:uid]',
+    ),
   );
 }
 
 /**
  * Return a '@username' link to user's profile.
- *
- * @param $user
- *   A Drupal user account.
  */
-function theme_mentions($user) {
-  $text = !module_exists('token')
-    ? $user->name
-    : token_replace(variable_get('mentions_output_content', '[user]'), 'user', $user);
+function theme_mentions($variables) {
+  $settings = variable_get('mentions', mentions_defaults());
+  $user = $variables['user'];
 
-  $attributes = array(
-    'class' => 'mentions mentions-'. $user->uid,
-    'title' => $text,
-  );
+  foreach (array('text', 'link') as $type) {
+    if (!empty($settings['output'][$type])) {
+      $$type = token_replace($settings['output'][$type], array('user' => $user));
+    }
+  }
 
-  return l(variable_get('mentions_output_prefix', '@') . $text . variable_get('mentions_output_suffix', ''), 'user/'. $user->uid, array('attributes' => $attributes));
+  // Allow other modules to modify the link text and destination.
+  drupal_alter('mentions_link', $text, $link, $user);
+
+  return l($settings['output']['prefix'] . $text . $settings['output']['suffix'], $link, array(
+    'attributes' => array(
+      'class' => 'mentions mentions-' . $user->uid,
+      'title' => $text,
+    ),
+  ));
 }
 
 /**
  * Return mentions input format.
- *
- * @param $text
- *   Text to be displayed as mentions input format.
  */
-function theme_mentions_input($text, $raw = FALSE) {
-  $text = variable_get('mentions_input_prefix', '[@') . $text . variable_get('mentions_input_suffix', ']');
-  return $raw ? $text : '<strong>'. $text .'</strong>';
-}
+function theme_mentions_input($variables) {
+  $settings = variable_get('mentions', mentions_defaults());
 
-function theme_mentions_filter_settings($form) {
-  global $user;
-
-  $header = array('', t('Prefix'), t('Content'), t('Suffix'), t('Example'));
-  $rows = array();
-
-  $content = array(
-    'input' => $user->name .'<br />'. '#'. $user->uid,
-    'output' => !module_exists('token') ? $user->name : drupal_render($form['output']['mentions_output_content']),
-  );
-
-  $details = array(
-    'input' => theme('mentions_input', $user->name) .'<br />'. theme('mentions_input', '#'. $user->uid),
-    'output' => theme('mentions', $user),
-  );
-
-  foreach (element_children($form) as $element) {
-    if ($element == 'tokens') {
-      continue;
-    }
-
-    unset($form[$element]['mentions_'. $element .'_prefix']['#title']);
-    unset($form[$element]['mentions_'. $element .'_suffix']['#title']);
-
-    $rows[] = array(
-      '<strong>'. $form[$element]['#value'] .'</strong>',
-      drupal_render($form[$element]['mentions_'. $element .'_prefix']),
-      $content[$element],
-      drupal_render($form[$element]['mentions_'. $element .'_suffix']),
-      $details[$element],
-    );
-  }
-
-  $output = theme('table', $header, $rows);
-  if (module_exists('token')) {
-    $output .= drupal_render($form['tokens']);
-  }
-
-  return $output;
+  $text = $settings['input']['prefix'] . $variables['text'] . $settings['input']['suffix'];
+  return $variables['raw'] ? $text : '<strong>' . $text . '</strong>';
 }

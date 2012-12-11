@@ -10,7 +10,7 @@ class mentions_views_handler_field_content extends views_handler_field {
 
     // Invoke mentions_hook_views_handler_field_content_fields().
     foreach (module_list() as $module) {
-      if (function_exists($function = 'mentions_'. $module .'_views_handler_field_content_fields')) {
+      if (function_exists($function = 'mentions_' . $module . '_views_handler_field_content_fields')) {
         $function($this);
       }
     }
@@ -23,7 +23,7 @@ class mentions_views_handler_field_content extends views_handler_field {
 
   function render($values) {
     // Invoke mentions_hook_views_handler_field_content().
-    if (function_exists($function = 'mentions_'. $values->{$this->aliases['type']} .'_views_handler_field_content')) {
+    if (function_exists($function = 'mentions_' . $values->{$this->aliases['type']} . '_views_handler_field_content')) {
       $function($this, $values, $link);
 
       return check_markup($function($this, $values));

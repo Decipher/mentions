@@ -5,13 +5,13 @@
  */
 
 /**
- * Implementation of hook_views_default_views().
+ * Implements hook_views_default_views().
  */
 function mentions_views_default_views() {
   /*
    * View 'mentions'
    */
-  $view = new view;
+  $view = new view();
   $view->name = 'mentions';
   $view->description = 'Displays @username style Mentions made in all Nodes and Comments.';
   $view->tag = '';

@@ -8,7 +8,7 @@ class MentionsTestCase extends DrupalWebTestCase {
   protected $admin_user;
 
   /**
-   * Implementation of getInfo().
+   * Implements getInfo().
    */
   public static function getInfo() {
     return array(
@@ -19,7 +19,7 @@ class MentionsTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Implementation of setUp().
+   * Implements setUp().
    */
   function setUp() {
     // Install required modules.
@@ -31,7 +31,7 @@ class MentionsTestCase extends DrupalWebTestCase {
     $this->drupalLogin($this->admin_user);
 
     // Enable the Mentions filter for the Filtered HTML Input format.
-    $this->drupalPost('admin/settings/filters/1', array('filters[mentions/0]' => 1), t('Save configuration'));
+    $this->drupalPost('admin/settings/filter/1', array('filters[mentions/0]' => 1), t('Save configuration'));
 
     // Enable comments on Page node type.
     $this->drupalPost('admin/content/node-type/page', array('comment' => 2, 'comment_preview' => 0), t('Save content type'));
@@ -50,39 +50,39 @@ class MentionsTestCase extends DrupalWebTestCase {
     // Check [@username] Mentions in Nodes are filtered.
     $edit = array(
       'title' => $this->randomName(),
-      'body' => 'node-'. theme('mentions_input', $this->admin_user->name, TRUE)
+      'body' => 'node-' . theme('mentions_input', $this->admin_user->name, TRUE)
     );
     $this->drupalPost('node/add/page', $edit, t('Save'));
-    $this->assertRaw('node-'. theme('mentions', $this->admin_user), t('[@username] Mention in Node was filtered.'), 'Mentions');
+    $this->assertRaw('node-' . theme('mentions', $this->admin_user), t('[@username] Mention in Node was filtered.'), 'Mentions');
 
     // Check [@username] Mentions in Comments are filtered.
     $nid = $this->getNodeID();
     $edit = array(
       'subject' => $this->randomName(),
-      'comment' => 'comment-'. theme('mentions_input', $this->admin_user->name, TRUE)
+      'comment' => 'comment-' . theme('mentions_input', $this->admin_user->name, TRUE)
     );
-    $this->drupalPost('comment/reply/'. $nid, $edit, t('Save'));
-    $this->assertRaw('comment-'. theme('mentions', $this->admin_user), t('[@username] Mention in Comment was filtered.'), 'Mentions');
+    $this->drupalPost('comment/reply/' . $nid, $edit, t('Save'));
+    $this->assertRaw('comment-' . theme('mentions', $this->admin_user), t('[@username] Mention in Comment was filtered.'), 'Mentions');
 
     // Check [@#uid] Mentions in Nodes are filtered.
     $edit = array(
       'title' => $this->randomName(),
-      'body' => 'node-'. theme('mentions_input', '#'. $this->admin_user->uid, TRUE)
+      'body' => 'node-' . theme('mentions_input', '#' . $this->admin_user->uid, TRUE)
     );
     $this->drupalPost('node/add/page', $edit, t('Save'));
-    $this->assertRaw('node-'. theme('mentions', $this->admin_user), t('[@#uid] Mention in Node was filtered.'), 'Mentions');
+    $this->assertRaw('node-' . theme('mentions', $this->admin_user), t('[@#uid] Mention in Node was filtered.'), 'Mentions');
 
     // Check [@#uid] Mentions in Comments are filtered.
     $nid = $this->getNodeID();
     $edit = array(
       'subject' => $this->randomName(),
-      'comment' => 'comment-'. theme('mentions_input', '#'. $this->admin_user->uid, TRUE)
+      'comment' => 'comment-' . theme('mentions_input', '#' . $this->admin_user->uid, TRUE)
     );
-    $this->drupalPost('comment/reply/'. $nid, $edit, t('Save'));
-    $this->assertRaw('comment-'. theme('mentions', $this->admin_user), t('[@#uid] Mention in Comment was filtered.'), 'Mentions');
+    $this->drupalPost('comment/reply/' . $nid, $edit, t('Save'));
+    $this->assertRaw('comment-' . theme('mentions', $this->admin_user), t('[@#uid] Mention in Comment was filtered.'), 'Mentions');
 
     // Check Mentions are listed on user's Mentions page.
-    $this->drupalGet('user/'. $this->admin_user->uid .'/mentions');
+    $this->drupalGet('user/' . $this->admin_user->uid . '/mentions');
     $this->assertRaw(theme('mentions', $this->admin_user), t('Mentions are listed on user\'s Mention page.'), 'Mentions');
   }
 }

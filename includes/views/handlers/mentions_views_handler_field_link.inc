@@ -1,6 +1,7 @@
 <?php
 /**
  * @file
+ *
  * Field handler to present a link to mention.
  */
 class mentions_views_handler_field_link extends views_handler_field {
@@ -11,7 +12,7 @@ class mentions_views_handler_field_link extends views_handler_field {
 
     // Invoke mentions_hook_views_handler_field_link_fields().
     foreach (module_list() as $module) {
-      if (function_exists($function = 'mentions_'. $module .'_views_handler_field_link_fields')) {
+      if (function_exists($function = 'mentions_' . $module . '_views_handler_field_link_fields')) {
         $function($this);
       }
     }
@@ -43,7 +44,7 @@ class mentions_views_handler_field_link extends views_handler_field {
     $link = array('options' => array());
 
     // Invoke mentions_hook_views_handler_field_link().
-    if (function_exists($function = 'mentions_'. $values->{$this->aliases['type']} .'_views_handler_field_link')) {
+    if (function_exists($function = 'mentions_' . $values->{$this->aliases['type']} . '_views_handler_field_link')) {
       $function($this, $values, $link);
 
       $text = !empty($this->options['text']) ? $this->options['text'] : t('view');
