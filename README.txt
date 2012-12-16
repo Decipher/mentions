@@ -1,4 +1,3 @@
-
 The Mentions module offers Twitter like functionality, recording all references
 to a user's username - using the [@username] or [@#uid] filter format - from
 various locations, providing a centralized page to track all mentions.
@@ -7,8 +6,9 @@ Mentions was written and is maintained by Stuart Clark (deciphered).
 - http://stuar.tc/lark
 
 
+
 Features
--------------------
+--------------------------------------------------------------------------------
 
 * Tracks Mentions from supported modules:
   * Drupal core Node module.
@@ -22,15 +22,17 @@ Features
   * http://[www.yoursite.com/path/to/drupal]/user/[#uid]/mentions
 
 
+
 Recommended Modules
--------------------
+--------------------------------------------------------------------------------
 
 * Token - http://drupal.org/project/token
 * Views - http://drupal.org/project/views
 
 
-Usage/Configuration
--------------------
+
+Usage / Configuration
+--------------------------------------------------------------------------------
 
 Once installed, the Mentions filter needs to be enabled on your desired Input
 formats, this can be done via the Input formats page.

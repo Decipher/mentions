@@ -34,6 +34,18 @@ function mentions_menu() {
 }
 
 /**
+ *
+ */
+function mentions_load($mid) {
+  $mention = db_select('mentions', 'm')
+    ->fields('m')
+    ->condition('mid', $mid)
+    ->execute()
+    ->fetchObject();
+  return is_object($mention) && $mention->mid == $mid ? $mention : FALSE;
+}
+
+/**
  * Implements hook_theme().
  */
 function mentions_theme() {
@@ -116,7 +128,12 @@ function mentions_entity_insert($entity, $type) {
       }
     }
   }
-  mentions_crud_update($type, $mentions, $id, $entity->uid);
+
+  if (!empty($mentions)) {
+    global $user;
+    $uid = isset($entity->uid) ? $entity->uid : $user->uid;
+    mentions_crud_update($type, $mentions, $id, $uid);
+  }
 }
 
 /**
@@ -137,17 +154,16 @@ function mentions_entity_delete($entity, $type) {
 /**
  * CRUD functon; Update mentions.
  */
-function mentions_crud_update($type, $mentions, $mid, $auid) {
+function mentions_crud_update($entity_type, $mentions, $entity_id, $author_uid) {
   // Build array of old mentions.
   $old_users = array();
-  $result = db_select('mentions', 'uid')
-    ->fields('uid')
-    ->condition('type', $type, '=')
-    ->condition('mid', $mid, '=')
+  $result = db_select('mentions', 'm')
+    ->fields('m')
+    ->condition('entity_type', $entity_type, '=')
+    ->condition('entity_id', $entity_id, '=')
     ->execute();
-
-  while ($data = $result->fetchAssoc()) {
-    $old_users[] = $data['uid'];
+  while ($mention = $result->fetchobject()) {
+    $old_users[$mention->mentioned_uid] = $mention->mid;
   }
 
   // Build array of new mentions.
@@ -158,37 +174,52 @@ function mentions_crud_update($type, $mentions, $mid, $auid) {
     }
   }
 
-  // Add new user mentions.
-  foreach (array_diff($new_users, $old_users) as $user) {
-    db_insert('mentions')
-      ->fields(array(
-        'type' => $type,
-        'mid' => $mid,
-        'uid' => $user,
-        'auid' => $auid,
-        'timestamp' => REQUEST_TIME,
-      ))
-      ->execute();
+  // Add new mentions.
+  foreach (array_diff($new_users, array_keys($old_users)) as $uid) {
+    $mention = array(
+      'entity_type' => $entity_type,
+      'entity_id' => $entity_id,
+      'mentioned_uid' => $uid,
+      'author_uid' => $author_uid,
+      'created' => REQUEST_TIME,
+    );
+    drupal_write_record('mentions', $mention);
+    module_invoke_all('mentions_insert', (object) $mention);
   }
 
-  // Remove old mentions.
-  foreach (array_diff($old_users, $new_users) as $user) {
+  // Update existing mentions.
+  foreach (array_intersect($new_users, array_keys($old_users)) as $uid) {
+    $mention = mentions_load($old_users[$uid]);
+    $mention->changed = REQUEST_TIME;
+    drupal_write_record('mentions', $mention, array('mid'));
+    module_invoke_all('mentions_update', $mention);
+  }
+
+  // Delete old mentions.
+  foreach (array_diff(array_keys($old_users), $new_users) as $uid) {
+    $mention = mentions_load($old_users[$uid]);
+    module_invoke_all('mentions_delete', $mention);
     db_delete('mentions')
-      ->condition('type', $type)
-      ->condition('mid', $mid)
-      ->condition('uid', $user)
+      ->condition('mid', $mention->mid)
       ->execute();
   }
 }
 
 /**
- * CRUD fucntion; Delete metnions.
+ * CRUD fucntion; Delete mentions.
  */
-function mentions_crud_delete($type, $mid) {
-  db_delete('mentions')
-    ->condition('type', $type)
-    ->condition('mid', $mid)
+function mentions_crud_delete($entity_type, $entity_id) {
+  $result = db_select('mentions', 'm')
+    ->fields('m')
+    ->condition('entity_type', $entity_type, '=')
+    ->condition('entity_id', $entity_id, '=')
     ->execute();
+  while ($mention = $result->fetchObject()) {
+    module_invoke_all('mentions_delete', $mention);
+    db_delete('mentions')
+      ->condition('mid', $mention->mid)
+      ->execute();
+  }
 }
 
 /**

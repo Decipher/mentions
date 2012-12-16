@@ -10,41 +10,53 @@
 function mentions_schema() {
   $schema['mentions'] = array(
     'fields' => array(
-      'type' => array(
+      'mid' => array(
+        'description' => 'The primary identifier for a mention.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'entity_type' => array(
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,
         'default' => '',
       ),
-      'mid' => array(
+      'entity_id' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'uid' => array(
+      'mentioned_uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'auid' => array(
+      'author_uid' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'timestamp' => array(
+      'created' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'changed' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
       ),
     ),
     'indexes' => array(
-      'uid' => array(
-        'uid',
+      'mid' => array(
+        'mid',
       ),
     ),
+    'primary key' => array('mid'),
   );
 
   return $schema;
@@ -61,6 +73,8 @@ function mentions_uninstall() {
  * Update from drupal 6 mentions
  */
 function mentions_update_7100() {
+  // @TODO - upgrade path for database schema.
+
   // Load variables to transform to new format
   $defaults = array(
     'input_prefix' => variable_get('mentions_input_prefix', '[@'),
