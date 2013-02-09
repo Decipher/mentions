@@ -107,6 +107,127 @@ function mentions_filter_filter_mentions_tips($format, $long = FALSE) {
 }
 
 /**
+ * Implements hook_token_info().
+ */
+function mentions_token_info() {
+  $type = array(
+    'name' => t('Mentions'),
+    'description' => t('Tokens related to individual mentions.'),
+    'needs-data' => 'mentions',
+  );
+
+  // Core tokens for mentions.
+  $mentions['mid'] = array(
+    'name' => t('Mention ID'),
+    'description' => t('The unique ID of the mention'),
+  );
+
+  // Chained tokens for nodes.
+  $mentions['user'] = array(
+    'name' => t('User'),
+    'description' => t('The mentioned user.'),
+    'type' => 'user',
+  );
+
+  $mentions['author'] = array(
+    'name' => t('Author'),
+    'description' => t('The author of the mention.'),
+    'type' => 'user',
+  );
+
+  $mention['created'] = array(
+    'name' => t('Date created'),
+    'description' => t('The date the mention was created.'),
+    'type' => 'date',
+  );
+
+  $mention['changed'] = array(
+    'name' => t('Date changed'),
+    'description' => t('The date the mention was last changed.'),
+    'type' => 'date',
+  );
+
+  return array(
+    'types' => array('mentions' => $type),
+    'tokens' => array('mentions' => $mentions),
+  );
+}
+
+/**
+ * Implements hook_tokens().
+ */
+function mentions_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $url_options = array('absolute' => TRUE);
+  if (isset($options['language'])) {
+    $url_options['language'] = $options['language'];
+    $language_code = $options['language']->language;
+  }
+  else {
+    $language_code = NULL;
+  }
+  $sanitize = ! empty($options['sanitize']);
+
+  $replacements = array();
+
+  if ($type == 'mentions' && !empty($data['mentions'])) {
+    $mention = $data['mentions'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        // Simple key values on the metnion.
+        case 'mid':
+          $replacements[$original] = $mention->mid;
+          break;
+
+        // Default values for the chained tokens handled below.
+        case 'user':
+          $user = user_load($mention->user);
+          $name = ($mention->user == 0) ? variable_get('anonymous', t('Anonymous')) : $author->user;
+          $replacements[$original] = $sanitize ? filter_xss($name) : $name;
+          break;
+
+        case 'author':
+          $author = user_load($mention->author);
+          $name = ($mention->author == 0) ? variable_get('anonymous', t('Anonymous')) : $author->name;
+          $replacements[$original] = $sanitize ? filter_xss($name) : $name;
+          break;
+
+        case 'created':
+          $replacements[$original] = format_date($mention->created, 'medium', '', NULL, $language_code);
+          break;
+
+        case 'changed':
+          $date = !empty($mention->changed) ? $mention->changed : $mention->created;
+          $replacements[$original] = format_date($date, 'medium', '', NULL, $language_code);
+          break;
+      }
+    }
+
+    if ($user_tokens = token_find_with_prefix($tokens, 'user')) {
+      $user = user_load($mention->user);
+      $replacements += token_generate('user', $user_tokens, array('user' => $user), $options);
+    }
+
+    if ($author_tokens = token_find_with_prefix($tokens, 'author')) {
+      $author = user_load($mention->author);
+      $replacements += token_generate('user', $author_tokens, array('user' => $author), $options);
+    }
+
+    if ($created_tokens = token_find_with_prefix($tokens, 'created')) {
+      $replacements += token_generate('date', $created_tokens, array('date' => $mention->created), $options);
+    }
+
+    if ($changed_tokens = token_find_with_prefix($tokens, 'changed')) {
+      $date = !empty($mention->changed) ? $mention->changed : $mention->created;
+      $replacements += token_generate('date', $changed_tokens, array('date' => $date), $options);
+    }
+  }
+
+
+  return $replacements;
+}
+
+/**
  * Implements hook_entity_insert().
  */
 function mentions_entity_insert($entity, $type) {
@@ -154,7 +275,7 @@ function mentions_entity_delete($entity, $type) {
 /**
  * CRUD functon; Update mentions.
  */
-function mentions_crud_update($entity_type, $mentions, $entity_id, $author_uid) {
+function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
   // Build array of old mentions.
   $old_users = array();
   $result = db_select('mentions', 'm')
@@ -163,7 +284,7 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author_uid) 
     ->condition('entity_id', $entity_id, '=')
     ->execute();
   while ($mention = $result->fetchobject()) {
-    $old_users[$mention->mentioned_uid] = $mention->mid;
+    $old_users[$mention->user] = $mention->mid;
   }
 
   // Build array of new mentions.
@@ -179,8 +300,8 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author_uid) 
     $mention = array(
       'entity_type' => $entity_type,
       'entity_id' => $entity_id,
-      'mentioned_uid' => $uid,
-      'author_uid' => $author_uid,
+      'user' => $uid,
+      'author' => $author,
       'created' => REQUEST_TIME,
     );
     drupal_write_record('mentions', $mention);

@@ -9,8 +9,8 @@
  */
 function mentions_rules_data_info() {
   return array(
-    'mention' => array(
-      'label' => t('mention'),
+    'mentions' => array(
+      'label' => t('mentions'),
       'group' => t('Mentions'),
       'wrap' => TRUE,
       'property info' => array(
@@ -59,7 +59,7 @@ function mentions_rules_event_info() {
     'variables' => array(
       'mention' => array(
         'label' => t('Mention'),
-        'type' => 'mention',
+        'type' => 'mentions',
       ),
     ),
   );
@@ -70,7 +70,7 @@ function mentions_rules_event_info() {
     'variables' => array(
       'mention' => array(
         'label' => t('Mention'),
-        'type' => 'mention',
+        'type' => 'mentions',
       ),
     ),
   );
@@ -81,7 +81,7 @@ function mentions_rules_event_info() {
     'variables' => array(
       'mention' => array(
         'label' => t('Mention'),
-        'type' => 'mention',
+        'type' => 'mentions',
       ),
     ),
   );
@@ -89,43 +89,3 @@ function mentions_rules_event_info() {
   return $items;
 }
 
-/**
- * Implements hook_mentions_insert() on behalf of rules.module
- */
-function rules_mentions_insert($mention) {
-  mentions_rules_invoke_event('mentions_insert', $mention);
-}
-
-/**
- * Implements hook_mentions_update() on behalf of rules.module
- */
-function rules_mentions_update($mention) {
-  mentions_rules_invoke_event('mentions_update', $mention);
-}
-
-/**
- * Implements hook_mentions_delete() on behalf of rules.module
- */
-function rules_mentions_delete($mention) {
-  mentions_rules_invoke_event('mentions_delete', $mention);
-}
-
-/**
- * Helper function; Prepare mention object and invoke Rules event.
- */
-function mentions_rules_invoke_event($event, $mention) {
-  // Load source entity object.
-  $entities = entity_load($mention->entity_type, array($mention->entity_id));
-  $mention->entity = isset($entities[$mention->entity_id]) ? $entities[$mention->entity_id] : NULL;
-  unset($mention->entity_id);
-
-  // Load mentioned user object.
-  $mention->user = user_load($mention->mentioned_uid);
-  unset($mention->mentioned_uid);
-
-  // Load author user object.
-  $mention->author = user_load($mention->author_uid);
-  unset($mention->author_uid);
-
-  rules_invoke_event($event, $mention);
-}

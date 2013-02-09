@@ -28,13 +28,13 @@ function mentions_schema() {
         'not null' => TRUE,
         'default' => 0,
       ),
-      'mentioned_uid' => array(
+      'user' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
-      'author_uid' => array(
+      'author' => array(
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
