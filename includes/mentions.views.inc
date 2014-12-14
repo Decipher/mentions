@@ -5,7 +5,18 @@
  */
 
 /**
- * Implementation of hook_views_handlers().
+* Implements hook_views_api.
+* Notifies the Views module that we're compatible with a particular API revision.
+*/
+function mentions_views_api() {
+  return array(
+    'api' => 2,
+    'path' => drupal_get_path('module', 'mentions') . '/includes',
+  );
+}
+
+/**
+ * Implements hook_views_handlers().
  */
 function mentions_views_handlers() {
   return array(
@@ -30,7 +41,7 @@ function mentions_views_handlers() {
 }
 
 /**
- * Implementation of hook_views_data().
+ * Implements hook_views_data().
  */
 function mentions_views_data() {
   $data['mentions']['table']['group']  = t('Mentions');

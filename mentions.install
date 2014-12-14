@@ -5,7 +5,7 @@
  */
 
 /**
- * Implementation of hook_schema().
+ * Implements hook_schema().
  */
 function mentions_schema() {
   $schema['mentions'] = array(
@@ -25,18 +25,9 @@ function mentions_schema() {
 }
 
 /**
- * Implementation of hook_install().
- */
-function mentions_install() {
-  drupal_install_schema('mentions');
-}
-
-/**
- * Implementation of hook_uninstall().
+ * Implements hook_uninstall().
  */
 function mentions_uninstall() {
-  drupal_uninstall_schema('mentions');
-
   variable_del('mentions_input_prefix');
   variable_del('mentions_input_suffix');
   variable_del('mentions_output_prefix');
