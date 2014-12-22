@@ -385,11 +385,11 @@ function mentions_get_mentions($text) {
       elseif ($match[1] == '#') {
         $user = user_load($match[2]);
       }
-      else {
+      elseif (!empty($match[2])) {
         $user = user_load_by_name($match[2]);
       }
 
-      if (is_object($user)) {
+      if (isset($user) && is_object($user)) {
         $users[] = array(
           'text' => $match[0],
           'user' => $user,
