@@ -240,15 +240,17 @@ function mentions_entity_insert($entity, $type) {
   list($id, $vid, $bundle_name) = entity_extract_ids($type, $entity);
   $instances = field_info_instances($type, $bundle_name);
   foreach ($instances as $instance) {
-    if ('text' == $instance['widget']['module']) {
+    if ('text' == $instance['widget']['module'] && $instance['settings']['text_processing']) {
       $items = field_get_items($type, $entity, $instance['field_name']);
-      foreach ($items as $item) {
-        if (!isset($filters[$item['format']])) {
-          $filter = filter_list_format($item['format']);
-          $filters[$item['format']] = isset($filter['filter_mentions']) && $filter['filter_mentions']->status;
-        }
-        if ($filters[$item['format']]) {
-          $mentions = array_merge($mentions, mentions_get_mentions($item['value']));
+      if (is_array($items)) {
+        foreach ($items as $item) {
+          if (!isset($filters[$item['format']])) {
+            $filter                   = filter_list_format($item['format']);
+            $filters[$item['format']] = isset($filter['filter_mentions']) && $filter['filter_mentions']->status;
+          }
+          if ($filters[$item['format']]) {
+            $mentions = array_merge($mentions, mentions_get_mentions($item['value']));
+          }
         }
       }
     }
