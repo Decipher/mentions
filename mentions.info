@@ -8,4 +8,5 @@ dependencies[] = filter
 files[] = includes/views/handlers/mentions_views_handler_field_content.inc
 files[] = includes/views/handlers/mentions_views_handler_field_link.inc
 files[] = includes/views/handlers/mentions_views_handler_field_title.inc
+files[] = includes/views/handlers/mentions_views_handler_field_auid.inc
 files[] = tests/mentions.test

@@ -7,7 +7,7 @@
 class mentions_views_handler_field_link extends views_handler_field {
   function construct() {
     parent::construct();
-    $this->additional_fields['type'] = 'type';
+    $this->additional_fields['entity_type'] = 'entity_type';
     $this->additional_fields['mid'] = 'mid';
 
     // Invoke mentions_hook_views_handler_field_link_fields().
@@ -44,7 +44,7 @@ class mentions_views_handler_field_link extends views_handler_field {
     $link = array('options' => array());
 
     // Invoke mentions_hook_views_handler_field_link().
-    if (function_exists($function = 'mentions_' . $values->{$this->aliases['type']} . '_views_handler_field_link')) {
+    if (function_exists($function = 'mentions_' . $values->{$this->aliases['entity_type']} . '_views_handler_field_link')) {
       $function($this, $values, $link);
 
       $text = !empty($this->options['text']) ? $this->options['text'] : t('view');

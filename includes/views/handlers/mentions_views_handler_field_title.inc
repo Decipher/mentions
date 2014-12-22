@@ -7,7 +7,7 @@
 class mentions_views_handler_field_title extends views_handler_field {
   function construct() {
     parent::construct();
-    $this->additional_fields['type'] = 'type';
+    $this->additional_fields['entity_type'] = 'entity_type';
 
     // Invoke mentions_hook_views_handler_field_title_fields().
     foreach (module_list() as $module) {
@@ -24,7 +24,7 @@ class mentions_views_handler_field_title extends views_handler_field {
 
   function render($values) {
     // Invoke mentions_hook_views_handler_field_title().
-    if (function_exists($function = 'mentions_' . $values->{$this->aliases['type']} . '_views_handler_field_title')) {
+    if (function_exists($function = 'mentions_' . $values->{$this->aliases['entity_type']} . '_views_handler_field_title')) {
       return check_plain($function($this, $values));
     }
 

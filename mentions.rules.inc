@@ -26,11 +26,11 @@ function mentions_rules_data_info() {
           'type' => 'entity',
           'label' => t('Mention source entity')
         ),
-        'user' => array(
+        'uid' => array(
           'type' => 'user',
           'label' => t('Mentioned user'),
         ),
-        'author' => array(
+        'auid' => array(
           'type' => 'user',
           'label' => t('Mention author user'),
         ),

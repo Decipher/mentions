@@ -123,13 +123,13 @@ function mentions_token_info() {
   );
 
   // Chained tokens for nodes.
-  $mentions['user'] = array(
+  $mentions['uid'] = array(
     'name' => t('User'),
     'description' => t('The mentioned user.'),
     'type' => 'user',
   );
 
-  $mentions['author'] = array(
+  $mentions['auid'] = array(
     'name' => t('Author'),
     'description' => t('The author of the mention.'),
     'type' => 'user',
@@ -180,15 +180,15 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
           break;
 
         // Default values for the chained tokens handled below.
-        case 'user':
-          $user = user_load($mention->user);
-          $name = ($mention->user == 0) ? variable_get('anonymous', t('Anonymous')) : $author->user;
+        case 'uid':
+          $user = user_load($mention->uid);
+          $name = ($mention->uid == 0) ? variable_get('anonymous', t('Anonymous')) : $user->name;
           $replacements[$original] = $sanitize ? filter_xss($name) : $name;
           break;
 
-        case 'author':
-          $author = user_load($mention->author);
-          $name = ($mention->author == 0) ? variable_get('anonymous', t('Anonymous')) : $author->name;
+        case 'auid':
+          $author = user_load($mention->auid);
+          $name = ($mention->auid == 0) ? variable_get('anonymous', t('Anonymous')) : $author->name;
           $replacements[$original] = $sanitize ? filter_xss($name) : $name;
           break;
 
@@ -203,13 +203,13 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
       }
     }
 
-    if ($user_tokens = token_find_with_prefix($tokens, 'user')) {
-      $user = user_load($mention->user);
+    if ($user_tokens = token_find_with_prefix($tokens, 'uid')) {
+      $user = user_load($mention->uid);
       $replacements += token_generate('user', $user_tokens, array('user' => $user), $options);
     }
 
-    if ($author_tokens = token_find_with_prefix($tokens, 'author')) {
-      $author = user_load($mention->author);
+    if ($author_tokens = token_find_with_prefix($tokens, 'auid')) {
+      $author = user_load($mention->auid);
       $replacements += token_generate('user', $author_tokens, array('user' => $author), $options);
     }
 
@@ -306,8 +306,8 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
     $mention = array(
       'entity_type' => $entity_type,
       'entity_id' => $entity_id,
-      'user' => $uid,
-      'author' => $author,
+      'uid' => $uid,
+      'auid' => $author,
       'created' => REQUEST_TIME,
     );
     drupal_write_record('mentions', $mention);

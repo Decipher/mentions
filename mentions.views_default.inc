@@ -49,11 +49,11 @@ function mentions_views_default_views() {
       'field' => 'title',
       'relationship' => 'none',
     ),
-    'timestamp' => array(
+    'created' => array(
       'label' => '',
       'alter' => array(
         'alter_text' => 1,
-        'text' => '[timestamp] ago',
+        'text' => '[created] ago',
         'make_link' => 0,
         'path' => '',
         'link_class' => '',
@@ -71,9 +71,9 @@ function mentions_views_default_views() {
       'date_format' => 'raw time ago',
       'custom_date_format' => '',
       'exclude' => 0,
-      'id' => 'timestamp',
+      'id' => 'created',
       'table' => 'mentions',
-      'field' => 'timestamp',
+      'field' => 'created',
       'relationship' => 'none',
     ),
     'auid' => array(
@@ -157,12 +157,12 @@ function mentions_views_default_views() {
     ),
   ));
   $handler->override_option('sorts', array(
-    'timestamp' => array(
+    'created' => array(
       'order' => 'DESC',
       'granularity' => 'second',
-      'id' => 'timestamp',
+      'id' => 'created',
       'table' => 'mentions',
-      'field' => 'timestamp',
+      'field' => 'created',
       'relationship' => 'none',
     ),
   ));

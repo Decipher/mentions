@@ -43,25 +43,25 @@ function mentions_views_data() {
   );
 
   // Content.
-  // $data['mentions']['content'] = array(
-  //   'title' => t('Content'),
-  //   'help' => t('The contents of the mention.'),
-  //   'field' => array(
-  //     'handler' => 'mentions_views_handler_field_content',
-  //   ),
-  // );
+   $data['mentions']['content'] = array(
+     'title' => t('Content'),
+     'help' => t('The contents of the mention.'),
+     'field' => array(
+       'handler' => 'mentions_views_handler_field_content',
+     ),
+   );
 
-  // // Link.
-  // $data['mentions']['link'] = array(
-  //   'title' => t('Link'),
-  //   'help' => t('The link to the mention.'),
-  //   'field' => array(
-  //     'handler' => 'mentions_views_handler_field_link',
-  //   ),
-  // );
+   // Link.
+   $data['mentions']['link'] = array(
+     'title' => t('Link'),
+     'help' => t('The link to the mention.'),
+     'field' => array(
+       'handler' => 'mentions_views_handler_field_link',
+     ),
+   );
 
   // Timestamp.
-  $data['mentions']['timestamp'] = array(
+  $data['mentions']['created'] = array(
     'title' => t('Date'),
     'help' => t('The date of the mention.'),
     'field' => array(
@@ -76,14 +76,14 @@ function mentions_views_data() {
     ),
   );
 
-  // // Title.
-  // $data['mentions']['title'] = array(
-  //   'title' => t('Title'),
-  //   'help' => t('The title of the mention.'),
-  //   'field' => array(
-  //     'handler' => 'mentions_views_handler_field_title',
-  //   ),
-  // );
+   // Title.
+   $data['mentions']['title'] = array(
+     'title' => t('Title'),
+     'help' => t('The title of the mention.'),
+     'field' => array(
+       'handler' => 'mentions_views_handler_field_title',
+     ),
+   );
 
   // User name - Author.
   $data['mentions']['auid'] = array(
@@ -104,7 +104,7 @@ function mentions_views_data() {
       'handler' => 'views_handler_argument_numeric',
     ),
     'field' => array(
-      'handler' => 'views_handler_field_user',
+      'handler' => 'mentions_views_handler_field_auid',
     ),
   );
 
