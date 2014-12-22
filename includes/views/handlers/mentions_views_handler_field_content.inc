@@ -3,6 +3,10 @@
  * @file
  * Field handler to present mention content.
  */
+
+/**
+ * Class mentions_views_handler_field_content
+ */
 class mentions_views_handler_field_content extends views_handler_field {
   function construct() {
     parent::construct();
@@ -10,7 +14,8 @@ class mentions_views_handler_field_content extends views_handler_field {
 
     // Invoke mentions_hook_views_handler_field_content_fields().
     foreach (module_list() as $module) {
-      if (function_exists($function = 'mentions_' . $module . '_views_handler_field_content_fields')) {
+      $function = 'mentions_' . $module . '_views_handler_field_content_fields';
+      if (function_exists($function)) {
         $function($this);
       }
     }
@@ -23,7 +28,8 @@ class mentions_views_handler_field_content extends views_handler_field {
 
   function render($values) {
     // Invoke mentions_hook_views_handler_field_content().
-    if (function_exists($function = 'mentions_' . $values->{$this->aliases['entity_type']} . '_views_handler_field_content')) {
+    $function = 'mentions_' . $values->{$this->aliases['entity_type']} . '_views_handler_field_content';
+    if (function_exists($function)) {
       return $function($this, $values);
     }
 

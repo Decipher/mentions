@@ -5,8 +5,11 @@ package = Filters
 configure = admin/config/content/mentions
 dependencies[] = filter
 
+
+
+; Files - Views handlers
+
 files[] = includes/views/handlers/mentions_views_handler_field_content.inc
 files[] = includes/views/handlers/mentions_views_handler_field_link.inc
 files[] = includes/views/handlers/mentions_views_handler_field_title.inc
 files[] = includes/views/handlers/mentions_views_handler_field_auid.inc
-files[] = tests/mentions.test

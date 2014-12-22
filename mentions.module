@@ -1,16 +1,17 @@
 <?php
 /**
  * @file
- * Contains core functions for the Mentions module.
+ * Core functions for the Mentions module.
  */
 
 /**
  * Include additional files.
  */
-$dirname = dirname(__FILE__);
+$dirname  = dirname(__FILE__);
 $includes = file_scan_directory($dirname . "/includes", '/.inc$/');
 foreach (module_list() as $module) {
-  if (isset($includes[$file = $dirname . "/includes/{$module}.inc"])) {
+  $file = $dirname . "/includes/{$module}.inc";
+  if (isset($includes[$file])) {
     require_once $file;
   }
 }
@@ -19,22 +20,20 @@ foreach (module_list() as $module) {
  * Implements hook_menu().
  */
 function mentions_menu() {
-  $items = array();
-
   $items['admin/config/content/mentions'] = array(
-    'title' => 'Mentions',
-    'page callback' => 'drupal_get_form',
-    'page arguments' => array('mentions_form'),
+    'title'            => 'Mentions',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('mentions_form'),
     'access arguments' => array('administer filters'),
-    'file' => 'mentions.admin.inc',
-    'type' => MENU_NORMAL_ITEM,
+    'file'             => 'mentions.admin.inc',
+    'type'             => MENU_NORMAL_ITEM,
   );
 
   return $items;
 }
 
 /**
- *
+ * Implements hook_load().
  */
 function mentions_load($mid) {
   $mention = db_select('mentions', 'm')
@@ -42,6 +41,7 @@ function mentions_load($mid) {
     ->condition('mid', $mid)
     ->execute()
     ->fetchObject();
+
   return is_object($mention) && $mention->mid == $mid ? $mention : FALSE;
 }
 
@@ -60,7 +60,7 @@ function mentions_theme() {
   $items['mentions_input'] = array(
     'variables' => array(
       'text' => NULL,
-      'raw' => FALSE,
+      'raw'  => FALSE,
     ),
   );
 
@@ -74,13 +74,19 @@ function mentions_filter_info() {
   $filters = array();
 
   $filters['filter_mentions'] = array(
-    'title' => t("Mentions filter"),
-    'description' => t("Converts @username and @uid into a link the user's profile page.", array(
-      '@username' => theme('mentions_input', array('text' => 'username', 'raw' => TRUE)),
-      '@uid' => theme('mentions_input', array('text' => '#uid', 'raw' => TRUE)),
+    'title'            => t("Mentions filter"),
+    'description'      => t("Converts @username and @uid into a link the user's profile page.", array(
+      '@username' => theme('mentions_input', array(
+        'text' => 'username',
+        'raw'  => TRUE
+      )),
+      '@uid'      => theme('mentions_input', array(
+        'text' => '#uid',
+        'raw'  => TRUE
+      )),
     )),
     'process callback' => 'mentions_filter_filter_mentions_process',
-    'tips callback' => 'mentions_filter_filter_mentions_tips',
+    'tips callback'    => 'mentions_filter_filter_mentions_tips',
   );
 
   return $filters;
@@ -93,6 +99,7 @@ function mentions_filter_filter_mentions_process($text, $filter, $format) {
   foreach (mentions_get_mentions($text) as $match) {
     $text = str_replace($match['text'], theme('mentions', array('user' => $match['user'])), $text);
   }
+
   return $text;
 }
 
@@ -102,7 +109,7 @@ function mentions_filter_filter_mentions_process($text, $filter, $format) {
 function mentions_filter_filter_mentions_tips($format, $long = FALSE) {
   return t("Converts @username and @uid into a link the user's profile page.", array(
     '@username' => theme('mentions_input', array('text' => 'username')),
-    '@uid' => theme('mentions_input', array('text' => '#uid')),
+    '@uid'      => theme('mentions_input', array('text' => '#uid')),
   ));
 }
 
@@ -111,44 +118,44 @@ function mentions_filter_filter_mentions_tips($format, $long = FALSE) {
  */
 function mentions_token_info() {
   $type = array(
-    'name' => t('Mentions'),
+    'name'        => t('Mentions'),
     'description' => t('Tokens related to individual mentions.'),
-    'needs-data' => 'mentions',
+    'needs-data'  => 'mentions',
   );
 
   // Core tokens for mentions.
   $mentions['mid'] = array(
-    'name' => t('Mention ID'),
+    'name'        => t('Mention ID'),
     'description' => t('The unique ID of the mention'),
   );
 
-  // Chained tokens for nodes.
+  // Chained tokens for mentions.
   $mentions['uid'] = array(
-    'name' => t('User'),
+    'name'        => t('User'),
     'description' => t('The mentioned user.'),
-    'type' => 'user',
+    'type'        => 'user',
   );
 
   $mentions['auid'] = array(
-    'name' => t('Author'),
+    'name'        => t('Author'),
     'description' => t('The author of the mention.'),
-    'type' => 'user',
+    'type'        => 'user',
   );
 
   $mention['created'] = array(
-    'name' => t('Date created'),
+    'name'        => t('Date created'),
     'description' => t('The date the mention was created.'),
-    'type' => 'date',
+    'type'        => 'date',
   );
 
   $mention['changed'] = array(
-    'name' => t('Date changed'),
+    'name'        => t('Date changed'),
     'description' => t('The date the mention was last changed.'),
-    'type' => 'date',
+    'type'        => 'date',
   );
 
   return array(
-    'types' => array('mentions' => $type),
+    'types'  => array('mentions' => $type),
     'tokens' => array('mentions' => $mentions),
   );
 }
@@ -160,12 +167,12 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
   $url_options = array('absolute' => TRUE);
   if (isset($options['language'])) {
     $url_options['language'] = $options['language'];
-    $language_code = $options['language']->language;
+    $language_code           = $options['language']->language;
   }
   else {
     $language_code = NULL;
   }
-  $sanitize = ! empty($options['sanitize']);
+  $sanitize = !empty($options['sanitize']);
 
   $replacements = array();
 
@@ -181,14 +188,14 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
 
         // Default values for the chained tokens handled below.
         case 'uid':
-          $user = user_load($mention->uid);
-          $name = ($mention->uid == 0) ? variable_get('anonymous', t('Anonymous')) : $user->name;
+          $user                    = user_load($mention->uid);
+          $name                    = ($mention->uid == 0) ? variable_get('anonymous', t('Anonymous')) : $user->name;
           $replacements[$original] = $sanitize ? filter_xss($name) : $name;
           break;
 
         case 'auid':
-          $author = user_load($mention->auid);
-          $name = ($mention->auid == 0) ? variable_get('anonymous', t('Anonymous')) : $author->name;
+          $author                  = user_load($mention->auid);
+          $name                    = ($mention->auid == 0) ? variable_get('anonymous', t('Anonymous')) : $author->name;
           $replacements[$original] = $sanitize ? filter_xss($name) : $name;
           break;
 
@@ -197,32 +204,37 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
           break;
 
         case 'changed':
-          $date = !empty($mention->changed) ? $mention->changed : $mention->created;
+          $date                    = !empty($mention->changed) ? $mention->changed : $mention->created;
           $replacements[$original] = format_date($date, 'medium', '', NULL, $language_code);
           break;
       }
     }
 
-    if ($user_tokens = token_find_with_prefix($tokens, 'uid')) {
+    $user_tokens = token_find_with_prefix($tokens, 'uid');
+    if ($user_tokens) {
       $user = user_load($mention->uid);
       $replacements += token_generate('user', $user_tokens, array('user' => $user), $options);
     }
 
-    if ($author_tokens = token_find_with_prefix($tokens, 'auid')) {
+    $author_tokens = token_find_with_prefix($tokens, 'auid');
+    if ($author_tokens) {
       $author = user_load($mention->auid);
       $replacements += token_generate('user', $author_tokens, array('user' => $author), $options);
     }
 
-    if ($created_tokens = token_find_with_prefix($tokens, 'created')) {
+    $created_tokens = token_find_with_prefix($tokens, 'created');
+    if ($created_tokens) {
       $replacements += token_generate('date', $created_tokens, array('date' => $mention->created), $options);
     }
 
-    if ($changed_tokens = token_find_with_prefix($tokens, 'changed')) {
+    $changed_tokens = token_find_with_prefix($tokens, 'changed');
+    if ($changed_tokens) {
       $date = !empty($mention->changed) ? $mention->changed : $mention->created;
       $replacements += token_generate('date', $changed_tokens, array('date' => $date), $options);
     }
 
-    if ($entity_tokens = token_find_with_prefix($tokens, 'entity')) {
+    $entity_tokens = token_find_with_prefix($tokens, 'entity');
+    if ($entity_tokens) {
       $replacements += token_generate($mention->entity_type, $entity_tokens, array($mention->entity_type => $mention->entity), $options);
     }
   }
@@ -236,7 +248,7 @@ function mentions_tokens($type, $tokens, array $data = array(), array $options =
  */
 function mentions_entity_insert($entity, $type) {
   $mentions = array();
-  $filters = array();
+  $filters  = array();
   list($id, $vid, $bundle_name) = entity_extract_ids($type, $entity);
   $instances = field_info_instances($type, $bundle_name);
   foreach ($instances as $instance) {
@@ -257,8 +269,7 @@ function mentions_entity_insert($entity, $type) {
   }
 
   if (!empty($mentions)) {
-    global $user;
-    $uid = isset($entity->uid) ? $entity->uid : $user->uid;
+    $uid = isset($entity->uid) ? $entity->uid : $GLOBALS['user']->uid;
     mentions_crud_update($type, $mentions, $id, $uid);
   }
 }
@@ -284,7 +295,7 @@ function mentions_entity_delete($entity, $type) {
 function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
   // Build array of old mentions.
   $old_users = array();
-  $result = db_select('mentions', 'm')
+  $result    = db_select('mentions', 'm')
     ->fields('m')
     ->condition('entity_type', $entity_type, '=')
     ->condition('entity_id', $entity_id, '=')
@@ -305,10 +316,10 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
   foreach (array_diff($new_users, array_keys($old_users)) as $uid) {
     $mention = array(
       'entity_type' => $entity_type,
-      'entity_id' => $entity_id,
-      'uid' => $uid,
-      'auid' => $author,
-      'created' => REQUEST_TIME,
+      'entity_id'   => $entity_id,
+      'uid'         => $uid,
+      'auid'        => $author,
+      'created'     => REQUEST_TIME,
     );
     drupal_write_record('mentions', $mention);
     module_invoke_all('mentions_insert', (object) $mention);
@@ -316,7 +327,7 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
 
   // Update existing mentions.
   foreach (array_intersect($new_users, array_keys($old_users)) as $uid) {
-    $mention = mentions_load($old_users[$uid]);
+    $mention          = mentions_load($old_users[$uid]);
     $mention->changed = REQUEST_TIME;
     drupal_write_record('mentions', $mention, array('mid'));
     module_invoke_all('mentions_update', $mention);
@@ -326,14 +337,12 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
   foreach (array_diff(array_keys($old_users), $new_users) as $uid) {
     $mention = mentions_load($old_users[$uid]);
     module_invoke_all('mentions_delete', $mention);
-    db_delete('mentions')
-      ->condition('mid', $mention->mid)
-      ->execute();
+    db_delete('mentions')->condition('mid', $mention->mid)->execute();
   }
 }
 
 /**
- * CRUD fucntion; Delete mentions.
+ * CRUD function; Delete mentions.
  */
 function mentions_crud_delete($entity_type, $entity_id) {
   $result = db_select('mentions', 'm')
@@ -343,9 +352,7 @@ function mentions_crud_delete($entity_type, $entity_id) {
     ->execute();
   while ($mention = $result->fetchObject()) {
     module_invoke_all('mentions_delete', $mention);
-    db_delete('mentions')
-      ->condition('mid', $mention->mid)
-      ->execute();
+    db_delete('mentions')->condition('mid', $mention->mid)->execute();
   }
 }
 
@@ -360,7 +367,7 @@ function mentions_crud_delete($entity_type, $entity_id) {
  */
 function mentions_get_mentions($text) {
   $settings = variable_get('mentions', mentions_defaults());
-  $users = array();
+  $users    = array();
 
   // Build regular expression pattern.
   $pattern = '/(\b|\#)(\w*)/';
@@ -408,15 +415,15 @@ function mentions_get_mentions($text) {
  */
 function mentions_defaults() {
   return array(
-    'input' => array(
+    'input'  => array(
       'prefix' => '[@',
       'suffix' => ']',
     ),
     'output' => array(
       'prefix' => '@',
       'suffix' => '',
-      'text' => '[user:name]',
-      'link' => 'user/[user:uid]',
+      'text'   => '[user:name]',
+      'link'   => 'user/[user:uid]',
     ),
   );
 }
@@ -426,7 +433,7 @@ function mentions_defaults() {
  */
 function theme_mentions($variables) {
   $settings = variable_get('mentions', mentions_defaults());
-  $user = $variables['user'];
+  $user     = $variables['user'];
 
   foreach (array('text', 'link') as $type) {
     if (!empty($settings['output'][$type])) {
@@ -452,5 +459,6 @@ function theme_mentions_input($variables) {
   $settings = variable_get('mentions', mentions_defaults());
 
   $text = $settings['input']['prefix'] . $variables['text'] . $settings['input']['suffix'];
+
   return $variables['raw'] ? $text : '<strong>' . $text . '</strong>';
 }

@@ -9,49 +9,49 @@
  */
 function mentions_schema() {
   $schema['mentions'] = array(
-    'fields' => array(
-      'mid' => array(
+    'fields'      => array(
+      'mid'         => array(
         'description' => 'The primary identifier for a mention.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
+        'type'        => 'serial',
+        'unsigned'    => TRUE,
+        'not null'    => TRUE,
       ),
       'entity_type' => array(
-        'type' => 'varchar',
-        'length' => 32,
+        'type'     => 'varchar',
+        'length'   => 32,
         'not null' => TRUE,
-        'default' => '',
+        'default'  => '',
       ),
-      'entity_id' => array(
-        'type' => 'int',
+      'entity_id'   => array(
+        'type'     => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
+        'default'  => 0,
       ),
-      'uid' => array(
-        'type' => 'int',
+      'uid'         => array(
+        'type'     => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
+        'default'  => 0,
       ),
-      'auid' => array(
-        'type' => 'int',
+      'auid'        => array(
+        'type'     => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0,
+        'default'  => 0,
       ),
-      'created' => array(
-        'type' => 'int',
+      'created'     => array(
+        'type'     => 'int',
         'not null' => TRUE,
-        'default' => 0,
+        'default'  => 0,
       ),
-      'changed' => array(
-        'type' => 'int',
+      'changed'     => array(
+        'type'     => 'int',
         'not null' => TRUE,
-        'default' => 0,
+        'default'  => 0,
       ),
     ),
-    'indexes' => array(
+    'indexes'     => array(
       'mid' => array(
         'mid',
       ),
@@ -75,18 +75,18 @@ function mentions_uninstall() {
 function mentions_update_7100() {
   // @TODO - upgrade path for database schema.
 
-  // Load variables to transform to new format
-  $defaults = array(
-    'input_prefix' => variable_get('mentions_input_prefix', '[@'),
-    'input_suffix' => variable_get('mentions_input_suffix', ']'),
+  // Load variables to transform to new format.
+  $settings = array(
+    'input_prefix'  => variable_get('mentions_input_prefix', '[@'),
+    'input_suffix'  => variable_get('mentions_input_suffix', ']'),
     'output_prefix' => variable_get('mentions_output_prefix', '@'),
     'output_suffix' => variable_get('mentions_output_suffix', ''),
     'token_content' => variable_get('mentions_output_content', '[user:name]'),
-    'token_link' => '',
+    'token_link'    => '',
   );
   variable_set('mentions', $settings);
 
-  // Remove old variables entries
+  // Remove old variables entries.
   variable_del('mentions_input_prefix');
   variable_del('mentions_input_suffix');
   variable_del('mentions_output_prefix');

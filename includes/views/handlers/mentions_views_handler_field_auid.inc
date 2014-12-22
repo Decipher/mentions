@@ -1,14 +1,11 @@
 <?php
-
 /**
  * @file
- * Definition of views_handler_field_user_name.
+ * Field handler to provide simple renderer that allows using a themed user link.
  */
 
 /**
- * Field handler to provide simple renderer that allows using a themed user link.
- *
- * @ingroup views_field_handlers
+ * Class mentions_views_handler_field_auid
  */
 class mentions_views_handler_field_auid extends views_handler_field_user_name {
   /**
@@ -20,11 +17,12 @@ class mentions_views_handler_field_auid extends views_handler_field_user_name {
 
   function option_definition() {
     $options = parent::option_definition();
+
     return $options;
   }
 
   function options_form(&$form, &$form_state) {
-     parent::options_form($form, $form_state);
+    parent::options_form($form, $form_state);
   }
 
   function render_link($data, $values) {
@@ -42,6 +40,7 @@ class mentions_views_handler_field_auid extends views_handler_field_user_name {
     if (!empty($this->options['format_username'])) {
       return format_username($account);
     }
+
     // Otherwise, there's no special handling, so return the data directly.
     return $data;
   }
