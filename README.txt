@@ -15,8 +15,9 @@ Features
 * Customizable input ([@username], [@#uid]) and output (@username) patterns,
   including support for the Token module.
 * Integrations with:
-  * Rules
-  * Views
+  * Machine name - Use a Machine name field as the mention source.
+  * Rules - React to created, updated and deleted mentions.
+  * Views - Display a list of all mentions, mentions by user, and more.
 
 
 

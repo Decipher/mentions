@@ -388,14 +388,35 @@ function mentions_get_mentions($text) {
   // Find all matching strings.
   if (preg_match_all($pattern, $text, $matches, PREG_SET_ORDER)) {
     foreach ($matches as $match) {
+      // Load user mentioned by user ID.
       if (drupal_substr($match[2], 0, 1) == '#') {
         $user = user_load(drupal_substr($match[2], 1));
       }
       elseif ($match[1] == '#') {
         $user = user_load($match[2]);
       }
+
+      // Load user mentioned by source.
       elseif (!empty($match[2])) {
-        $user = user_load_by_name($match[2]);
+        $query = new EntityFieldQuery();
+        $query->entityCondition('entity_type', 'user')
+          ->addMetaData('account', user_load(1));
+
+        list($source, $field_name, $column) = explode(':', $settings['input']['source']);
+        switch ($source) {
+          case 'property':
+            $query->propertyCondition($field_name, $match[2]);
+            break;
+
+          case 'field':
+            $query->fieldCondition($field_name, $column, $match[2]);
+            break;
+        }
+
+        $result = $query->execute();
+        if (!empty($result['user'])) {
+          $user = user_load(key($result['user']));
+        }
       }
 
       if (isset($user) && is_object($user)) {
@@ -418,6 +439,7 @@ function mentions_defaults() {
     'input'  => array(
       'prefix' => '[@',
       'suffix' => ']',
+      'srouce' => 'property:name',
     ),
     'output' => array(
       'prefix' => '@',
