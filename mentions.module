@@ -16,6 +16,9 @@ foreach (module_list() as $module) {
   }
 }
 
+// Textcomplete library path (for users not using the Libraries module).
+define('MENTIONS_TEXTCOMPLETE_PATH', 'sites/all/libraries/textcomplete/dist');
+
 /**
  * Implements hook_menu().
  */
@@ -27,6 +30,14 @@ function mentions_menu() {
     'access arguments' => array('administer filters'),
     'file'             => 'mentions.admin.inc',
     'type'             => MENU_NORMAL_ITEM,
+  );
+
+  $items['mentions/autocomplete'] = array(
+    'title'            => 'Mentions autocomplete',
+    'page callback'    => 'mentions_autocomplete',
+    'access callback'  => 'user_access',
+    'access arguments' => array('access user profiles'),
+    'type'             => MENU_CALLBACK,
   );
 
   return $items;
@@ -65,6 +76,13 @@ function mentions_theme() {
   );
 
   return $items;
+}
+
+/**
+ * Implements hook_element_info_alter().
+ */
+function mentions_element_info_alter(&$type) {
+  $type['text_format']['#process'][] = 'mentions_process_text_format';
 }
 
 /**
@@ -299,6 +317,109 @@ function mentions_get_mentions($text) {
   }
 
   return $users;
+}
+
+/**
+ * Process callback for 'text_format' element.
+ *
+ * Adds textcomplete library for autocompletion functionality.
+ */
+function mentions_process_text_format($element, $form_state) {
+  $library_loaded = FALSE;
+
+  // Load library via the Libraries module if present.
+  if (module_exists('libraries')) {
+    $textcomplete = libraries_detect('textcomplete');
+    if ($textcomplete['installed']) {
+      libraries_load('textcomplete');
+      $library_loaded = TRUE;
+    }
+  }
+
+  // Load library from default location.
+  elseif (file_exists(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js')) {
+    drupal_add_css(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.css');
+    drupal_add_js(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js');
+    $library_loaded = TRUE;
+  }
+
+  // If library loaded, attach Mentions javacript.
+  if ($library_loaded) {
+    $settings = variable_get('mentions', mentions_defaults());
+
+    drupal_add_js(array(
+      'mentions' => array(
+        'textcomplete' => array(
+          'forms'        => array("#{$element['#id']}-value"),
+          'prefix'       => $settings['input']['prefix'],
+          'prefix_regex' => preg_quote($settings['input']['prefix']),
+          'suffix'       => $settings['input']['suffix'],
+        )
+      ),
+    ), array(
+      'type'  => 'setting',
+      'scope' => JS_DEFAULT,
+    ));
+    drupal_add_js(drupal_get_path('module', 'mentions') . '/js/mentions.textcomplete.js');
+  }
+
+  return $element;
+}
+
+/**
+ * Mentions autocomplete callback.
+ *
+ * @param string $string
+ */
+function mentions_autocomplete($string = '') {
+  $matches = array();
+  if ($string) {
+    $settings = variable_get('mentions', mentions_defaults());
+
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'user')
+      ->range(0, 5)
+      ->addMetaData('account', user_load(1));
+
+    list($source, $field_name, $column) = explode(':', $settings['input']['source']);
+    switch ($source) {
+      case 'property':
+        $query->propertyCondition($field_name, db_like($string) . '%', 'LIKE');
+        break;
+
+      case 'field':
+        $query->fieldCondition($field_name, $column, db_like($string) . '%', 'LIKE');
+        break;
+    }
+
+    $result = $query->execute();
+    if (!empty($result['user'])) {
+      $users = user_load_multiple(array_keys($result['user']));
+      foreach ($users as $user) {
+        $match = NULL;
+        switch ($source) {
+          case 'property':
+            if (isset($user->{$property}) && is_string($user->{$property})) {
+              $match = $user->{$property};
+            }
+            break;
+
+          case 'field':
+            $langcode = field_language('user', $user, $field_name);
+            if (isset($user->{$field_name}[$langcode][0][$column]) && is_string($user->{$field_name}[$langcode][0][$column])) {
+              $match = $user->{$field_name}[$langcode][0][$column];
+            }
+            break;
+        }
+
+        if (!is_null($match)) {
+          $matches[] = $match;
+        }
+      }
+    }
+  }
+
+  drupal_json_output($matches);
 }
 
 /**

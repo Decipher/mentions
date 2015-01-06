@@ -14,6 +14,8 @@ Features
 * An Input filter to convert [@username] or [@#uid] to the user's profile.
 * Customizable input ([@username], [@#uid]) and output (@username) patterns,
   including support for the Token module.
+* Autocompletion of mentions; Using the jQuery textcomplete library usernames
+  will be suggested while mentioning.
 * Integrations with:
   * Machine name - Use a Machine name field as the mention source.
   * Rules - React to created, updated and deleted mentions.
@@ -24,8 +26,24 @@ Features
 Recommended Modules
 --------------------------------------------------------------------------------
 
-* Token - http://drupal.org/project/token
-* Views - http://drupal.org/project/views
+* Libraries API - https://drupal.org/project/libraries
+* Token         - https://drupal.org/project/token
+* Views         - https://drupal.org/project/views
+
+
+
+jQuery textcomplete - Autocompletion of mentions
+--------------------------------------------------------------------------------
+
+The jQuery textcomplete library adds autocompletion of mentions, to install it
+follow these steps:
+
+1. (optional) Download and install the Libraries API module.
+    http://drupal.org/project/libraries
+
+2. Download the jQuery textcompelte library and extract and move it into your
+   libraries folder as 'textcomplete' (eg. sites/all/libraries/textcomplete).
+    https://github.com/yuku-t/jquery-textcomplete/archive/master.zip
 
 
 
