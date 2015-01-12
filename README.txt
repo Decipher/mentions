@@ -43,7 +43,7 @@ follow these steps:
 
 2. Download the jQuery textcomplete library and extract and move it into your
    libraries folder as 'textcomplete' (eg. sites/all/libraries/textcomplete).
-    https://github.com/yuku-t/jquery-textcomplete/archive/master.zip
+    https://github.com/Decipher/jquery-textcomplete/archive/master.zip
 
 
 
@@ -51,7 +51,7 @@ Alternatively, you can use the Drush command 'mentions-library' or the Drush
 make entry provided below:
 
   libraries[textcomplete][download][type] = get
-  libraries[textcomplete][download][url] = https://github.com/yuku-t/jquery-textcomplete/archive/master.zip
+  libraries[textcomplete][download][url] = https://github.com/Decipher/jquery-textcomplete/archive/master.zip
 
 
 

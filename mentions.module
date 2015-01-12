@@ -399,8 +399,8 @@ function mentions_autocomplete($string = '') {
         $match = NULL;
         switch ($source) {
           case 'property':
-            if (isset($user->{$property}) && is_string($user->{$property})) {
-              $match = $user->{$property};
+            if (isset($user->{$field_name}) && is_string($user->{$field_name})) {
+              $match = $user->{$field_name};
             }
             break;
 
@@ -430,7 +430,7 @@ function mentions_defaults() {
     'input'  => array(
       'prefix' => '[@',
       'suffix' => ']',
-      'srouce' => 'property:name',
+      'source' => 'property:name',
     ),
     'output' => array(
       'prefix' => '@',

@@ -9,10 +9,8 @@
           {
             match: matchExp,
             search: function (term, callback) {
-              $.getJSON(Drupal.settings.basePath + 'mentions/autocomplete/' + term).done(function (resp) {
+              $.getJSON(Drupal.settings.basePath + 'mentions/autocomplete/' + term, function (resp) {
                 callback(resp);
-              }).fail(function () {
-                callback([]);
               });
             },
             replace: function (mention) {

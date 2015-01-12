@@ -39,7 +39,7 @@ function mentions_drush_help($section) {
  *   The path to download the library to. Defaults to 'sites/all/libraries'.
  */
 function drush_mentions_library($path = 'sites/all/libraries') {
-  $file = 'https://github.com/yuku-t/jquery-textcomplete/archive/master.zip';
+  $file = 'https://github.com/Decipher/jquery-textcomplete/archive/master.zip';
   $dirname = 'textcomplete';
 
   // Create the path if it does not exist.
