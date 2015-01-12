@@ -32,15 +32,29 @@ function mentions_menu() {
     'type'             => MENU_NORMAL_ITEM,
   );
 
-  $items['mentions/autocomplete'] = array(
+  $items['mentions/autocomplete/%'] = array(
     'title'            => 'Mentions autocomplete',
     'page callback'    => 'mentions_autocomplete',
-    'access callback'  => 'user_access',
-    'access arguments' => array('access user profiles'),
+    'access callback'  => '_mentions_access',
+    'access arguments' => array(2),
     'type'             => MENU_CALLBACK,
   );
 
   return $items;
+}
+
+/**
+ * Access callback for autocompletion menu item.
+ */
+function _mentions_access($format_id = '') {
+  if (user_access("use text format {$format_id}")) {
+    $filter = filter_list_format($format_id);
+    if (isset($filter['filter_mentions']) && $filter['filter_mentions']->status) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 /**
@@ -82,7 +96,9 @@ function mentions_theme() {
  * Implements hook_element_info_alter().
  */
 function mentions_element_info_alter(&$type) {
-  $type['text_format']['#process'][] = 'mentions_process_text_format';
+  if (mentions_library_exists()) {
+    $type['text_format']['#process'][] = 'mentions_process_text_format';
+  }
 }
 
 /**
@@ -189,7 +205,7 @@ function mentions_crud_update($entity_type, $mentions, $entity_id, $author) {
     ->condition('entity_id', $entity_id, '=')
     ->execute();
   while ($mention = $result->fetchobject()) {
-    $old_users[$mention->user] = $mention->mid;
+    $old_users[$mention->uid] = $mention->mid;
   }
 
   // Build array of new mentions.
@@ -290,14 +306,14 @@ function mentions_get_mentions($text) {
         $query->entityCondition('entity_type', 'user')
           ->addMetaData('account', user_load(1));
 
-        list($source, $field_name, $column) = explode(':', $settings['input']['source']);
-        switch ($source) {
+        $source = explode(':', $settings['input']['source']);
+        switch ($source[0]) {
           case 'property':
-            $query->propertyCondition($field_name, $match[2]);
+            $query->propertyCondition($source[1], $match[2]);
             break;
 
           case 'field':
-            $query->fieldCondition($field_name, $column, $match[2]);
+            $query->fieldCondition($source[1], $source[2], $match[2]);
             break;
         }
 
@@ -325,42 +341,44 @@ function mentions_get_mentions($text) {
  * Adds textcomplete library for autocompletion functionality.
  */
 function mentions_process_text_format($element, $form_state) {
-  $library_loaded = FALSE;
+  // If library exists, attach Mentions javacript.
+  if (mentions_library_exists()) {
+    $formats         =& drupal_static(__FUNCTION__, array());
+    $filter_formats  = array();
+    $mentions_filter = FALSE;
+    if (isset($element['format']['format']['#options']) && is_array($element['format']['format']['#options'])) {
+      foreach (array_keys($element['format']['format']['#options']) as $format_id) {
+        if (!isset($formats[$format_id])) {
+          $formats[$format_id] = filter_list_format($format_id);
+        }
 
-  // Load library via the Libraries module if present.
-  if (module_exists('libraries')) {
-    $textcomplete = libraries_detect('textcomplete');
-    if ($textcomplete['installed']) {
-      libraries_load('textcomplete');
-      $library_loaded = TRUE;
+        if (isset($formats[$format_id]['filter_mentions']) && $formats[$format_id]['filter_mentions']->status) {
+          $filter_formats[] = $format_id;
+          $mentions_filter  = TRUE;
+        }
+      }
     }
-  }
 
-  // Load library from default location.
-  elseif (file_exists(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js')) {
-    drupal_add_css(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.css');
-    drupal_add_js(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js');
-    $library_loaded = TRUE;
-  }
+    if ($mentions_filter) {
+      mentions_library_load();
+      $settings = variable_get('mentions', mentions_defaults());
 
-  // If library loaded, attach Mentions javacript.
-  if ($library_loaded) {
-    $settings = variable_get('mentions', mentions_defaults());
-
-    drupal_add_js(array(
-      'mentions' => array(
-        'textcomplete' => array(
-          'forms'        => array("#{$element['#id']}-value"),
-          'prefix'       => $settings['input']['prefix'],
-          'prefix_regex' => preg_quote($settings['input']['prefix']),
-          'suffix'       => $settings['input']['suffix'],
-        )
-      ),
-    ), array(
-      'type'  => 'setting',
-      'scope' => JS_DEFAULT,
-    ));
-    drupal_add_js(drupal_get_path('module', 'mentions') . '/js/mentions.textcomplete.js');
+      drupal_add_js(array(
+        'mentions' => array(
+          'textcomplete' => array(
+            'forms'        => array($element['#id']),
+            'formats'      => $filter_formats,
+            'prefix'       => $settings['input']['prefix'],
+            'prefix_regex' => preg_quote($settings['input']['prefix']),
+            'suffix'       => $settings['input']['suffix'],
+          )
+        ),
+      ), array(
+        'type'  => 'setting',
+        'scope' => JS_DEFAULT,
+      ));
+      drupal_add_js(drupal_get_path('module', 'mentions') . '/js/mentions.textcomplete.js');
+    }
   }
 
   return $element;
@@ -381,14 +399,14 @@ function mentions_autocomplete($string = '') {
       ->range(0, 5)
       ->addMetaData('account', user_load(1));
 
-    list($source, $field_name, $column) = explode(':', $settings['input']['source']);
-    switch ($source) {
+    $source = explode(':', $settings['input']['source']);
+    switch ($source[0]) {
       case 'property':
-        $query->propertyCondition($field_name, db_like($string) . '%', 'LIKE');
+        $query->propertyCondition($source[1], db_like($string) . '%', 'LIKE');
         break;
 
       case 'field':
-        $query->fieldCondition($field_name, $column, db_like($string) . '%', 'LIKE');
+        $query->fieldCondition($source[1], $source[2], db_like($string) . '%', 'LIKE');
         break;
     }
 
@@ -397,17 +415,17 @@ function mentions_autocomplete($string = '') {
       $users = user_load_multiple(array_keys($result['user']));
       foreach ($users as $user) {
         $match = NULL;
-        switch ($source) {
+        switch ($source[0]) {
           case 'property':
-            if (isset($user->{$field_name}) && is_string($user->{$field_name})) {
-              $match = $user->{$field_name};
+            if (isset($user->{$source[1]}) && is_string($user->{$source[1]})) {
+              $match = $user->{$source[1]};
             }
             break;
 
           case 'field':
-            $langcode = field_language('user', $user, $field_name);
-            if (isset($user->{$field_name}[$langcode][0][$column]) && is_string($user->{$field_name}[$langcode][0][$column])) {
-              $match = $user->{$field_name}[$langcode][0][$column];
+            $langcode = field_language('user', $user, $source[1]);
+            if (isset($user->{$source[1]}[$langcode][0][$source[2]]) && is_string($user->{$source[1]}[$langcode][0][$source[2]])) {
+              $match = $user->{$source[1]}[$langcode][0][$source[2]];
             }
             break;
         }
@@ -420,6 +438,66 @@ function mentions_autocomplete($string = '') {
   }
 
   drupal_json_output($matches);
+}
+
+/**
+ * Check if the Mentions textcomplete library is present.
+ */
+function mentions_library_exists() {
+  $mentions_library =& drupal_static('mentions_library', NULL);
+
+  if ($mentions_library === FALSE) {
+    return FALSE;
+  }
+
+  if (is_null($mentions_library)) {
+    // Check for library via the Libraries module if present.
+    if (module_exists('libraries')) {
+      $textcomplete = libraries_detect('textcomplete');
+      if ($textcomplete['installed']) {
+        $mentions_library = 'libraries';
+
+        return TRUE;
+      }
+    }
+
+    // Check for library from the default location.
+    elseif (file_exists(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js')) {
+      $mentions_library = 'default';
+
+      return TRUE;
+    }
+  }
+
+  return TRUE;
+}
+
+/**
+ * Load the Mentions textcomplete library.
+ */
+function mentions_library_load() {
+  if (mentions_library_exists()) {
+    $loaded           =& drupal_static(__FUNCTION__, FALSE);
+    $mentions_library =& drupal_static('mentions_library', NULL);
+
+    if (!$loaded) {
+      switch ($mentions_library) {
+        case 'default':
+          drupal_add_css(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.css');
+          drupal_add_js(MENTIONS_TEXTCOMPLETE_PATH . '/jquery.textcomplete.min.js');
+          break;
+
+        case 'libraries':
+          libraries_load('textcomplete');
+          break;
+      }
+      $loaded = TRUE;
+    }
+
+    return $loaded;
+  }
+
+  return FALSE;
 }
 
 /**

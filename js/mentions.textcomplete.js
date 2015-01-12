@@ -5,13 +5,20 @@
       var matchExp = new RegExp('\\B' + settings.prefix_regex + '(\\w*)$');
 
       $.each(settings.forms, function (index, form) {
-        $(form).textcomplete([
+        $('textarea[id^="' + form + '-value"]').textcomplete([
           {
+            form: form,
             match: matchExp,
             search: function (term, callback) {
-              $.getJSON(Drupal.settings.basePath + 'mentions/autocomplete/' + term, function (resp) {
-                callback(resp);
-              });
+              var format_id = $('select[id^="' + this.form + '-format"]').val();
+              if ($.inArray(format_id, settings.formats) != -1) {
+                $.getJSON(Drupal.settings.basePath + 'mentions/autocomplete/' + format_id + '/' + term, function (resp) {
+                  callback(resp);
+                });
+              }
+              else {
+                callback([]);
+              }
             },
             replace: function (mention) {
               return settings.prefix + mention + settings.suffix + ' ';
