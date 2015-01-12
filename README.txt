@@ -41,9 +41,17 @@ follow these steps:
 1. (optional) Download and install the Libraries API module.
     http://drupal.org/project/libraries
 
-2. Download the jQuery textcompelte library and extract and move it into your
+2. Download the jQuery textcomplete library and extract and move it into your
    libraries folder as 'textcomplete' (eg. sites/all/libraries/textcomplete).
     https://github.com/yuku-t/jquery-textcomplete/archive/master.zip
+
+
+
+Alternatively, you can use the Drush command 'mentions-library' or the Drush
+make entry provided below:
+
+  libraries[textcomplete][download][type] = get
+  libraries[textcomplete][download][url] = https://github.com/yuku-t/jquery-textcomplete/archive/master.zip
 
 
 
