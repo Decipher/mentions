@@ -7,6 +7,12 @@ dependencies[] = filter
 
 
 
+; Files - Tests
+
+files[] = mentions.test
+
+
+
 ; Files - Views handlers
 
 files[] = includes/views/handlers/mentions_views_handler_field_content.inc

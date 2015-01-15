@@ -141,9 +141,9 @@ function mentions_filter_filter_mentions_process($text, $filter, $format) {
  * Tips callback for Mentions filter.
  */
 function mentions_filter_filter_mentions_tips($format, $long = FALSE) {
-  return t("Converts @username and @uid into a link the user's profile page.", array(
-    '@username' => theme('mentions_input', array('text' => 'username')),
-    '@uid'      => theme('mentions_input', array('text' => '#uid')),
+  return t("Converts !username and !uid into a link the user's profile page.", array(
+    '!username' => theme('mentions_input', array('text' => 'username')),
+    '!uid'      => theme('mentions_input', array('text' => '#uid')),
   ));
 }
 
