@@ -206,5 +206,19 @@ class MentionsCoreTestCase extends MentionsTestCase {
       'entity_type' => 'node',
       'entity_id'   => $node->nid,
     ), 'Mentions on deleted node removed successfully.');
+
+    // Ensure settings changes are retained.
+    $edit = array(
+      'mentions[input][prefix]'  => '@',
+      'mentions[input][suffix]'  => '',
+      'mentions[output][prefix]' => '[',
+      'mentions[output][suffix]' => ']',
+      'mentions[output][text]'   => '[user:uid]',
+      'mentions[output][link]'   => 'user/[user:name]',
+    );
+    $this->drupalPost('admin/config/content/mentions', $edit, t('Save configuration'));
+    foreach ($edit as $name => $value) {
+      $this->assertFieldByName($name, $value);
+    }
   }
 }
