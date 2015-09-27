@@ -1,6 +1,7 @@
 Mentions 7.x-1.x-dev, xxxx-xx-xx (development release)
 --------------------------------------------------------------------------------
 
+- #2481483 by cattmote: Fixed output field UI.
 - #2462661 by Deciphered, jerrylow: Fixed line endings.
 - #2425443 by Deciphered, eiriksm: Fixed issue with classes.
 

@@ -65,7 +65,7 @@ function mentions_form($form, $form_state) {
   $form['mentions']['output']['text'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Text'),
-    '#default_value' => '[user:name]',
+    '#default_value' => $settings['output']['text'],
     '#description'   => t('The text for the replacement link. Can use tokens.'),
     '#size'          => 20,
   );
@@ -73,7 +73,7 @@ function mentions_form($form, $form_state) {
   $form['mentions']['output']['link'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Link'),
-    '#default_value' => 'user/[user:uid]',
+    '#default_value' => $settings['output']['link'],
     '#description'   => t('The destination for the replacement link. Can use tokens.'),
     '#size'          => 20,
   );
