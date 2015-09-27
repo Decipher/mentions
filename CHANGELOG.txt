@@ -1,4 +1,11 @@
-Mentions 7.x-1.0-beta1, 2015-01-16
+Mentions 7.x-1.x-dev, xxxx-xx-xx (development release)
+--------------------------------------------------------------------------------
+
+- #2425443 by Deciphered, eiriksm: Fixed issue with classes.
+
+
+
+Mentions 7.x-1.0-beta2, 2015-01-16
 --------------------------------------------------------------------------------
 
 - Initial Drupal 7 release.

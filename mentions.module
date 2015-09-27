@@ -537,7 +537,7 @@ function theme_mentions($variables) {
 
   return l($settings['output']['prefix'] . $text . $settings['output']['suffix'], $link, array(
     'attributes' => array(
-      'class' => 'mentions mentions-' . $user->uid,
+      'class' => array('mentions', 'mentions-' . $user->uid),
       'title' => $text,
     ),
   ));
