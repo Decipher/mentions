@@ -9,7 +9,7 @@ dependencies[] = filter
 
 ; Files - Tests
 
-files[] = mentions.test
+files[] = tests/mentions.test
 
 
 

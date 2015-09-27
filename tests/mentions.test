@@ -8,8 +8,8 @@
  * Class MentionsTestCase
  */
 class MentionsTestCase extends DrupalWebTestCase {
-  protected $adminUser = array();
-  protected $authUser = array();
+  protected $adminUser = NULL;
+  protected $authUser = NULL;
 
   /**
    * {@inheritdoc}
@@ -51,7 +51,7 @@ class MentionsTestCase extends DrupalWebTestCase {
    * @param $group
    *   The group this message belongs to, defaults to 'Other'.
    *
-   * @return
+   * @return bool
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   function assertLinkByHrefAndLabel($href, $label, $index = 0, $message = '', $group = 'Other') {
@@ -77,6 +77,7 @@ class MentionsTestCase extends DrupalWebTestCase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   function assertNoMentionExists($conditions = array(), $message = '') {
+    /** @var SelectQuery $query */
     $query = db_select('mentions', 'm')->fields('m');
     foreach ($conditions as $field => $value) {
       $query->condition($field, $value);
@@ -97,6 +98,7 @@ class MentionsTestCase extends DrupalWebTestCase {
    *   TRUE if the assertion succeeded, FALSE otherwise.
    */
   function assertMentionExists($conditions = array(), $message = '') {
+    /** @var SelectQuery $query */
     $query = db_select('mentions', 'm')->fields('m');
     foreach ($conditions as $field => $value) {
       $query->condition($field, $value);
